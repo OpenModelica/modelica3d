@@ -1,0 +1,26 @@
+find_package(GtkGl REQUIRED)
+find_package(OpenSceneGraph REQUIRED osgGA osgText osgViewer osgDB)
+
+add_definitions(-std=c++0x)
+
+#requires osg, gtk and proc3d
+include_directories(${GTK_INCLUDE_DIRS} "${CMAKE_SOURCE_DIR}/lib/proc3d/src/" ${GTKGL_INCLUDE_DIRS} ${OPENSCENEGRAPH_INCLUDE_DIRS})
+link_directories(${GTK_LIBRARY_DIRS} ${GTKGL_LIBRARY_DIRS})
+
+set(osg-gtk_src "${CMAKE_SOURCE_DIR}/backends/osg-gtk/src/")
+
+add_library(m3d-osg-gtk SHARED "${osg-gtk_src}/osgviewerGTK.cpp" "${osg-gtk_src}/osggtkdrawingarea.cpp")
+add_dependencies(m3d-osg-gtk proc3d)
+target_link_libraries(m3d-osg-gtk proc3d ${OPENSCENEGRAPH_LIBRARIES} ${GTK_LIBRARIES} ${GTKGL_LIBRARIES})
+
+add_executable(viewer "${osg-gtk_src}/viewer.cpp")
+target_link_libraries(viewer m3d-osg-gtk)
+
+install(TARGETS m3d-osg-gtk
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
+
+
+
