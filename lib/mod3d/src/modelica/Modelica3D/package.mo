@@ -74,6 +74,11 @@ package Modelica3D
   end unknownId;
 */
 
+  function objectId
+    input String s;
+    output Id id = HeapString(s);
+  end objectId;
+
   function createMaterial
     input State state;
     output Id id;
