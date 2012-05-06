@@ -126,6 +126,17 @@ class Modelica3DAPI(dbus.service.Object):
             
         return reference
     
+    @mod3D_api()
+    def load_scene(self, filepath):
+      with data.libraries.load(filepath) as (src, _):
+          try:
+              objlist = [{'name':obj} for obj in src.objects]
+          except UnicodeDecodeError as detail:
+              print(detail)
+      
+      ops.wm.link_append(directory=filepath + '/Object/', link=False, autoselect=True, files=objlist)
+      return filepath
+
 
     @dbus.service.method(dbus_interface='de.tuberlin.uebb.modelica3d.api',
                          in_signature='a{sv}', 
@@ -139,16 +150,16 @@ class Modelica3DAPI(dbus.service.Object):
                          in_signature='a{sv}', 
                          out_signature='i')
     def make_sphere(self, parameters):	
-        bpy.ops.mesh.primitive_sphere_add(size=parameters['size'])
-        bpy.context.active_object.name = str(parameters['reference'])
+        ops.mesh.primitive_sphere_add(size=parameters['size'])
+        context.active_object.name = str(parameters['reference'])
         return 0
 
     @dbus.service.method(dbus_interface='de.tuberlin.uebb.modelica3d.api',
                          in_signature='a{sv}', 
                          out_signature='i')
     def make_cylinder(self, parameters):	
-        bpy.ops.mesh.primitive_cone_add(radius=parameters['diameter'] / 2.0, depth=parameters['height'])
-        bpy.context.active_object.name = str(parameters['reference'])
+        ops.mesh.primitive_cone_add(radius=parameters['diameter'] / 2.0, depth=parameters['height'])
+        context.active_object.name = str(parameters['reference'])
         return 0
     
 
@@ -169,6 +180,10 @@ class Modelica3DAPI(dbus.service.Object):
         bpy.ops.transform.translate(value=e[2], axis=(0,0,1.0))
 
 if __name__ == '__main__':
+    # delete default cube
+    if 'Cube' in data.objects:
+      context.scene.objects.active = data.objects['Cube']
+      ops.object.delete()
 
     session_bus = dbus.SessionBus()
     name = dbus.service.BusName("de.tuberlin.uebb.modelica3d.server", session_bus)
