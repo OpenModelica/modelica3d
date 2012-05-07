@@ -131,24 +131,24 @@ class Modelica3DAPI(dbus.service.Object):
                          in_signature='a{sv}', 
                          out_signature='i')
     def make_cone(self, parameters):	
-        bpy.ops.mesh.primitive_cone_add(radius=parameters['diameter'] / 2.0, depth=parameters['height'])
-        bpy.context.active_object.name = str(parameters['reference'])
+        ops.mesh.primitive_cone_add(radius=parameters['diameter'] / 2.0, depth=parameters['height'])
+        context.active_object.name = str(parameters['reference'])
         return 0
 
     @dbus.service.method(dbus_interface='de.tuberlin.uebb.modelica3d.api',
                          in_signature='a{sv}', 
                          out_signature='i')
     def make_sphere(self, parameters):	
-        bpy.ops.mesh.primitive_sphere_add(size=parameters['size'])
-        bpy.context.active_object.name = str(parameters['reference'])
+        ops.mesh.primitive_sphere_add(size=parameters['size'])
+        context.active_object.name = str(parameters['reference'])
         return 0
 
     @dbus.service.method(dbus_interface='de.tuberlin.uebb.modelica3d.api',
                          in_signature='a{sv}', 
                          out_signature='i')
     def make_cylinder(self, parameters):	
-        bpy.ops.mesh.primitive_cone_add(radius=parameters['diameter'] / 2.0, depth=parameters['height'])
-        bpy.context.active_object.name = str(parameters['reference'])
+        ops.mesh.primitive_cylinder_add(radius=parameters['diameter'] / 2.0, depth=parameters['height'])
+        context.active_object.name = str(parameters['reference'])
         return 0
     
 
@@ -158,15 +158,15 @@ class Modelica3DAPI(dbus.service.Object):
                          out_signature='i')
     def rotate(self, parameters):
         name = str(parameters['reference'])
-        o = bpy.data.objects[name]
-        bpy.context.scene.objects.active=o
+        o = data.objects[name]
+        context.scene.objects.active=o
         r = list(tee(map(lambda x : parameters[x], _MATRIX_ARGS),3))
         print("Rot: %s" % str(r))
         m = Matrix(r)
         e = m.to_euler()        
-        bpy.ops.transform.translate(value=e[0], axis=(1.0,0,0))
-        bpy.ops.transform.translate(value=e[1], axis=(0,1.0,0))
-        bpy.ops.transform.translate(value=e[2], axis=(0,0,1.0))
+        ops.transform.translate(value=e[0], axis=(1.0,0,0))
+        ops.transform.translate(value=e[1], axis=(0,1.0,0))
+        ops.transform.translate(value=e[2], axis=(0,0,1.0))
 
 if __name__ == '__main__':
 
