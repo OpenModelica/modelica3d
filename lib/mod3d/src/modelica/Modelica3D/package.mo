@@ -74,6 +74,11 @@ package Modelica3D
   end unknownId;
 */
 
+  function objectId
+    input String s;
+    output Id id = HeapString(s);
+  end objectId;
+
   function createMaterial
     input State state;
     output Id id;
@@ -367,9 +372,9 @@ package Modelica3D
     input String fileName;
     output String res;
     protected
-    Message msg = Message(TARGET, OBJECT, INTERFACE, "loadSceneFromFile");
+    Message msg = Message(TARGET, OBJECT, INTERFACE, "load_scene");
     algorithm
-        addString(msg, "fileName", fileName);
+        addString(msg, "filepath", fileName);
         res := sendMessage(state.conn, msg);
   end loadSceneFromFile;
 

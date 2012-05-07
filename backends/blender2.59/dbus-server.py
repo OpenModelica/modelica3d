@@ -143,6 +143,17 @@ class Modelica3DAPI(dbus.service.Object):
         ops.mesh.primitive_cylinder_add(radius=diameter / 2.0, depth=height)
         context.active_object.name = reference
         return reference
+
+    @mod3D_api()
+    def load_scene(self, filepath):
+      with data.libraries.load(filepath) as (src, _):
+          try:
+              objlist = [{'name':obj} for obj in src.objects]
+          except UnicodeDecodeError as detail:
+              print(detail)
+      
+      ops.wm.link_append(directory=filepath + '/Object/', link=False, autoselect=True, files=objlist)
+      return filepath
     
     @mod3D_api(reference = defined_object, frame = positive_int)
     def rotate(self, reference, R_1_1, R_1_2, R_1_3, R_2_1,R_2_2, R_2_3, R_3_1, R_3_2, R_3_3, frame, immediate=False):
@@ -161,6 +172,10 @@ class Modelica3DAPI(dbus.service.Object):
         o.keyframe_insert('rotation_euler', frame=frame)
 
 if __name__ == '__main__':
+    # delete default cube
+    if 'Cube' in data.objects:
+      context.scene.objects.active = data.objects['Cube']
+      ops.object.delete()
 
     session_bus = dbus.SessionBus()
     name = dbus.service.BusName("de.tuberlin.uebb.modelica3d.server", session_bus)
