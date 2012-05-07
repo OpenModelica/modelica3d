@@ -24,7 +24,7 @@ def mod3D_api(**checks):
         print("Decorating %s with %s" % (str(f), checks))
 
         def checked(s, **p) :    
-            print("Got: %s %s" % (str(s), str(p)))
+            #print("Got: %s %s" % (str(s), str(p)))
             for param in p:
                 if param in checks:
                     res,msg = checks[param](p[param])
@@ -126,47 +126,39 @@ class Modelica3DAPI(dbus.service.Object):
             
         return reference
     
+    @mod3D_api(reference = undefined_object)
+    def make_cone(self, reference, x=0.0, y=0.0, z=1.0, diameter=1.0, height=1.0):	
+        ops.mesh.primitive_cone_add(radius=diameter / 2.0, depth=height)
+        context.active_object.name = reference
+        return reference
 
-    @dbus.service.method(dbus_interface='de.tuberlin.uebb.modelica3d.api',
-                         in_signature='a{sv}', 
-                         out_signature='i')
-    def make_cone(self, parameters):	
-        ops.mesh.primitive_cone_add(radius=parameters['diameter'] / 2.0, depth=parameters['height'])
-        context.active_object.name = str(parameters['reference'])
-        return 0
+    @mod3D_api(reference = undefined_object)
+    def make_sphere(self, reference, size):	
+        ops.mesh.primitive_uv_sphere_add(size=size)
+        context.active_object.name = reference
+        return reference
 
-    @dbus.service.method(dbus_interface='de.tuberlin.uebb.modelica3d.api',
-                         in_signature='a{sv}', 
-                         out_signature='i')
-    def make_sphere(self, parameters):	
-        ops.mesh.primitive_sphere_add(size=parameters['size'])
-        context.active_object.name = str(parameters['reference'])
-        return 0
-
-    @dbus.service.method(dbus_interface='de.tuberlin.uebb.modelica3d.api',
-                         in_signature='a{sv}', 
-                         out_signature='i')
-    def make_cylinder(self, parameters):	
-        ops.mesh.primitive_cylinder_add(radius=parameters['diameter'] / 2.0, depth=parameters['height'])
-        context.active_object.name = str(parameters['reference'])
-        return 0
+    @mod3D_api(reference = undefined_object)
+    def make_cylinder(self, reference, x=0.0, y=0.0, z=1.0, diameter=1.0, height=1.0):	
+        ops.mesh.primitive_cylinder_add(radius=diameter / 2.0, depth=height)
+        context.active_object.name = reference
+        return reference
     
-
-    _MATRIX_ARGS=map(lambda x : "R_" + str(x[0]) + "_" + str(y[1]),product(range(1,4),repeat=2))
-    @dbus.service.method(dbus_interface='de.tuberlin.uebb.modelica3d.api',
-                         in_signature='a{sv}', 
-                         out_signature='i')
-    def rotate(self, parameters):
-        name = str(parameters['reference'])
-        o = data.objects[name]
+    @mod3D_api(reference = defined_object, frame = positive_int)
+    def rotate(self, reference, R_1_1, R_1_2, R_1_3, R_2_1,R_2_2, R_2_3, R_3_1, R_3_2, R_3_3, frame, immediate=False):
+        o = data.objects[reference]
         context.scene.objects.active=o
-        r = list(tee(map(lambda x : parameters[x], _MATRIX_ARGS),3))
-        print("Rot: %s" % str(r))
-        m = Matrix(r)
+        if immediate:
+          o.keyframe_insert('rotation_euler', frame=frame - 1)
+
+        m = Matrix([R_1_1,R_1_2, R_1_3],
+                   [R_2_1,R_2_2, R_2_3],
+                   [R_3_1,R_3_2, R_3_3])
         e = m.to_euler()        
-        ops.transform.translate(value=e[0], axis=(1.0,0,0))
-        ops.transform.translate(value=e[1], axis=(0,1.0,0))
-        ops.transform.translate(value=e[2], axis=(0,0,1.0))
+        ops.transform.rotate(value=(e[0],), axis=(1.0,0,0))
+        ops.transform.rotate(value=(e[1],), axis=(0,1.0,0))
+        ops.transform.rotate(value=(e[2],), axis=(0,0,1.0))
+        o.keyframe_insert('rotation_euler', frame=frame)
 
 if __name__ == '__main__':
 
