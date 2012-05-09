@@ -157,19 +157,21 @@ class Modelica3DAPI(dbus.service.Object):
     
     @mod3D_api(reference = defined_object, frame = positive_int)
     def rotate(self, reference, R_1_1, R_1_2, R_1_3, R_2_1,R_2_2, R_2_3, R_3_1, R_3_2, R_3_3, frame, immediate=False):
+        if None in [R_1_1, R_1_2, R_1_3, R_2_1,R_2_2, R_2_3, R_3_1, R_3_2, R_3_3] : return "Argument error."
         o = data.objects[reference]
         context.scene.objects.active=o
         if immediate:
           o.keyframe_insert('rotation_euler', frame=frame - 1)
-
-        m = Matrix([R_1_1,R_1_2, R_1_3],
+        
+        m = Matrix(([R_1_1,R_1_2, R_1_3],
                    [R_2_1,R_2_2, R_2_3],
-                   [R_3_1,R_3_2, R_3_3])
+                   [R_3_1,R_3_2, R_3_3]))
         e = m.to_euler()        
         ops.transform.rotate(value=(e[0],), axis=(1.0,0,0))
         ops.transform.rotate(value=(e[1],), axis=(0,1.0,0))
         ops.transform.rotate(value=(e[2],), axis=(0,0,1.0))
         o.keyframe_insert('rotation_euler', frame=frame)
+        return reference
 
 if __name__ == '__main__':
     # delete default cube
