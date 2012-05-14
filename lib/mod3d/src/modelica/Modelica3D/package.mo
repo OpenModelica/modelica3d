@@ -49,6 +49,8 @@ package Modelica3D
     
     parameter Integer framerate = 30;
     parameter Modelica.SIunits.Time updateInterval = 1 / framerate;
+    parameter Boolean autostop = true;
+
     output Boolean send;     
 
     equation 
@@ -59,8 +61,8 @@ package Modelica3D
         state.frame := integer( time/updateInterval + 1); // First frame is 1, not 0;
       end when;
      
-      when terminal() then
-        stop(state);
+      when terminal()then
+        if autostop then stop(state); end if;
       end when;
   end Controller;
 
