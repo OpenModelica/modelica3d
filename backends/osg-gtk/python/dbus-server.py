@@ -155,25 +155,26 @@ class Modelica3DAPI(dbus.service.Object):
 if __name__ == '__main__':
     # load DLL or shared object
     if (platform.system() == 'Linux'):
-        omg = CDLL("libm3d-osg-gtk.so")  # linux shared object
+        viewer = CDLL("libm3d-osg-gtk.so")  # GTK/OSG backend
+        proc3d = CDLL("libproc3d.so") # procedural 3d 
     elif (platform.system() == 'Windows'):
-        print "Windows OS not tested yet..."	# eventually add Windows shared library
+        print("Windows OS not tested yet...")	# eventually add Windows shared library
         sys.exit()
     elif (platform.system() == 'Darwin'):
-        print "MacOS Darwin OS not tested yet..." # eventually add MacOS shared library
+        print("MacOS Darwin OS not tested yet...") # eventually add MacOS shared library
         sys.exit()
 
     session_bus = dbus.SessionBus()
     name = dbus.service.BusName("de.tuberlin.uebb.modelica3d.server", session_bus)
     api = Modelica3DAPI(session_bus, "/de/tuberlin/uebb/modelica3d/server")
 
-    ctxt = omg.osg_gtk_alloc_context()
-    api.omg = omg
+    ctxt = viewer.osg_gtk_alloc_context()
+    api.omg = proc3d
     api.ctxt = ctxt
 
     print("Running dbus-server...")
     l.run()
     print("dbus server finished.")
 
-    omg.proc3d_send_signal(ctxt, 1) # run viewer
-    omg.osg_gtk_free_context(ctxt)
+    proc3d.proc3d_send_signal(ctxt, 1) # run viewer
+    viewer.osg_gtk_free_context(ctxt)
