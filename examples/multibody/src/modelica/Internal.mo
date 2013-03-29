@@ -85,7 +85,7 @@ This model is documented at
 
 </html>
 "));
-	
+
        import Bus=ModelicaServices.modbus;
        import ModelicaServices.modcount;		
 
@@ -110,8 +110,29 @@ This model is documented at
            id := M3D.createSphere(state, length);
          elseif (descr == "cylinder") then
            id := M3D.createCylinderAt(state, length, width, at[1], at[2], at[3]);
-         else 
+         elseif (descr == "pipecylinder") then
+           // not yet supported
+           Modelica.Utilities.Streams.print("Error: Visualization of pipecylinders has not been implemented yet!");
            id := Id("UNKNOWN");
+         elseif (descr == "pipe") then
+           // not yet supported
+           Modelica.Utilities.Streams.print("Error: Visualization of pipes has not been implemented yet!");
+           id := Id("UNKNOWN");
+         elseif (descr == "beam") then
+           // not yet supported
+           Modelica.Utilities.Streams.print("Error: Visualization of beams has not been implemented yet!");
+           id := Id("UNKNOWN");
+         elseif (descr == "gearwheel") then
+           // not yet supported
+           Modelica.Utilities.Streams.print("Error: Visualization of gearwheels has not been implemented yet!");
+           id := Id("UNKNOWN");
+         elseif (descr == "spring") then
+           // not yet supported
+           Modelica.Utilities.Streams.print("Error: Visualization of springs has not been implemented yet!");
+           id := Id("UNKNOWN");
+         else 
+           // assume it is a filename
+           id := M3D.loadFromFile(state, Modelica.Utilities.Files.fullPathName(descr), at[1], at[2], at[3]);
          end if;
          
        end shapeDescrTo3D;      
@@ -124,32 +145,41 @@ This model is documented at
        String res;
 
        discrete Real[3] pos;
-       discrete Real[3] oldPos;
+	   discrete Real[3,3] oldT;
        discrete Boolean moved;
-     algorithm
-       when initial() and modcount.get(initContext) <> 1 then
+	   discrete Boolean rotated;
+	 // disable initial equation for now, since there is some bug in initial residuals  
+	 //initial equation
+	 //  pre(oldT) = R.T;
+	 //  pre(pos) = r + Frames.resolve1(R, r_shape);	 
+     initial algorithm
+       if modcount.get(initContext) <> 1 then
          id := shapeDescrTo3D(m3d_control.state, shapeType, length, width, height, lengthDirection);
          mat := M3D.createMaterial(m3d_control.state);
-         M3D.setAmbientColor(m3d_control.state, mat, color[1] / 255, color[2] / 255, color[3] / 255, 1.0,  0); 
+         M3D.setAmbientColor(m3d_control.state, mat, color[1] / 255, color[2] / 255, color[3] / 255, 1.0, time); 
          M3D.setSpecularColor(m3d_control.state, mat, specularCoefficient * (color[1] / 255), 
-                              specularCoefficient * color[2] / 255, specularCoefficient * color[3] / 255, 1.0, 0);
+                              specularCoefficient * color[2] / 255, specularCoefficient * color[3] / 255, 1.0, time);
             
          M3D.applyMaterial(m3d_control.state, id, mat);
          modcount.set(initContext, 1);
-       end when;
-
+       end if;
+     algorithm
        when m3d_control.send and modcount.get(initContext) == 1 then
-         oldPos := pos;
+
+         // check for rotation
+         rotated := not Modelica.Math.Matrices.isEqual(R.T, oldT);
+	     if noEvent(rotated) then
+	       res := M3D.rotate(m3d_control.state, id, R.T, time);
+		 end if;
+	     oldT := R.T;
+
+         // check for translation
          pos := r + Frames.resolve1(R, r_shape);         
-         moved := not isEqual(oldPos, pos);
+         moved := not Modelica.Math.Vectors.isEqual(pos, pre(pos));
+		 if noEvent(moved) then
+		   res := M3D.moveTo(m3d_control.state, id, pos, time);
+		 end if;
 
-         res := M3D.rotate(m3d_control.state, id, R.T, m3d_control.state.frame);
-
-         if true then
-           res := M3D.moveTo(m3d_control.state, id, pos, m3d_control.state.frame);
-         end if;
-
-         res := "";
        end when;
   end PartialShape;
   end Animation;

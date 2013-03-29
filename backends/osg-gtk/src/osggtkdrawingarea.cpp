@@ -8,6 +8,7 @@ _drawable (0),
 _state    (0),
 _queue    (*getEventQueue()) {
     setCameraManipulator(new osgGA::TrackballManipulator());
+    setLightingMode(osg::View::HEADLIGHT);
 }
 
 OSGGTKDrawingArea::~OSGGTKDrawingArea() {

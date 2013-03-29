@@ -39,7 +39,9 @@ namespace proc3d {
   };
 
   struct LoadObject : ObjectOperation {
-    LoadObject(const std::string& name) : ObjectOperation(name) {}
+    LoadObject(const std::string& name, const std::string& f, const array<double,3>& a) : ObjectOperation(name), fileName(f), at(a) {}
+	std::string fileName;
+	array<double, 3> at;
   };
 
   struct ObjectLinkOperation : ObjectOperation {
@@ -91,55 +93,55 @@ namespace proc3d {
   };
 
   struct DeltaOperation : ObjectOperation {
-    DeltaOperation(const std::string& name, const unsigned int f) : ObjectOperation(name), frame(f) {}
-    unsigned int frame;
+    DeltaOperation(const std::string& name, const double t) : ObjectOperation(name), time(t) {}
+    double time;
   };
     
   struct Move : DeltaOperation {
-    Move(const std::string& name, const unsigned int f, const double x, const double y, const double z) : DeltaOperation(name, f), x(x), y(y), z(z) {}
+    Move(const std::string& name, const double t, const double x, const double y, const double z) : DeltaOperation(name, t), x(x), y(y), z(z) {}
     double x,y,z;
   };
 
   struct Scale : DeltaOperation {
-    Scale(const std::string& name, const unsigned int f, const double x, const double y, const double z) : DeltaOperation(name, f), x(x), y(y), z(z) {}
+    Scale(const std::string& name, const double t, const double x, const double y, const double z) : DeltaOperation(name, t), x(x), y(y), z(z) {}
     double x,y,z;
   };
 
   struct RotateEuler : DeltaOperation {
-    RotateEuler(const std::string& name, const unsigned int f, const double x, const double y, const double z) : DeltaOperation(name, f), x(x), y(y), z(z) {}
+    RotateEuler(const std::string& name, const double t, const double x, const double y, const double z) : DeltaOperation(name, t), x(x), y(y), z(z) {}
     double x,y,z;
   };
 
   struct RotateMatrix : DeltaOperation {
-    RotateMatrix(const std::string& name, const unsigned int f, const bounded_matrix<double, 3, 3>& m) : DeltaOperation(name, f), m(m) {}
+    RotateMatrix(const std::string& name, const double t, const bounded_matrix<double, 3, 3>& m) : DeltaOperation(name, t), m(m) {}
     bounded_matrix<double, 3, 3> m;
   };
 
   struct SetMaterialProperty : DeltaOperation {
-    SetMaterialProperty(const std::string& name, const unsigned int f, const std::string& p, const double v) : DeltaOperation(name, f), property(p), value(v) {}
+    SetMaterialProperty(const std::string& name, const double t, const std::string& p, const double v) : DeltaOperation(name, t), property(p), value(v) {}
     std::string property;
     double value;
   };
 
   struct SetAmbientColor : DeltaOperation {
-    SetAmbientColor(const std::string& name, const unsigned int f, 
+    SetAmbientColor(const std::string& name, const double t,
 		    const double r, const double g, const double b, const double a) : 
-      DeltaOperation(name, f), color({{r,g,b,a}}) {}
-    array<double, 4> color;
+      DeltaOperation(name, t) {color[0] = r;color[1] = g;color[2] = b;color[3] = a;}
+      array<double, 4> color;
   };
 
   struct SetDiffuseColor : DeltaOperation {
-    SetDiffuseColor(const std::string& name, const unsigned int f, 
+    SetDiffuseColor(const std::string& name, const double t,
 		    const double r, const double g, const double b, const double a) : 
-      DeltaOperation(name, f), color({{r,g,b,a}}) {}
-    array<double, 4> color;
+      DeltaOperation(name, t){color[0] = r;color[1] = g;color[2] = b;color[3] = a;}
+      array<double, 4> color;
   };
 
   struct SetSpecularColor : DeltaOperation {
-    SetSpecularColor(const std::string& name, const unsigned int f, 
+    SetSpecularColor(const std::string& name, const double t,
 		     const double r, const double g, const double b, const double a) : 
-      DeltaOperation(name, f), color({{r,g,b,a}}) {}
-    array<double, 4> color;
+      DeltaOperation(name, t){color[0] = r;color[1] = g;color[2] = b;color[3] = a;}
+      array<double, 4> color;
   };
 
   typedef variant<CreateGroup, CreateSphere, CreateBox, 

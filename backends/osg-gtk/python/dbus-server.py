@@ -1,8 +1,24 @@
-
+#!/usr/bin/env python
 import os
 import sys
 import platform
 from ctypes import *
+
+# OPENMODELICA :: This is openmodelica based path which provides the dbus-python bindings binaries.
+if sys.platform == 'win32':
+  omhome = os.environ['OPENMODELICAHOME']
+  sys.path.append(os.path.join(omhome, 'lib', 'omlibrary-modelica3d', 'osg-gtk', 'dbus-python'))
+
+# load DLL or shared object
+if (platform.system() == 'Linux'):
+    viewer = CDLL("libm3d-osg-gtk.so")  # GTK/OSG backend
+    proc3d = CDLL("libproc3d.so") # procedural 3d
+elif (platform.system() == 'Windows'):
+    viewer = CDLL("libm3d-osg-gtk.dll")  # GTK/OSG backend
+    proc3d = CDLL("libproc3d.dll") # procedural 3d
+elif (platform.system() == 'Darwin'):
+    print("MacOS Darwin OS not tested yet...") # eventually add MacOS shared library
+    sys.exit()
 
 from dbus.mainloop.glib import DBusGMainLoop
 import dbus
@@ -10,9 +26,12 @@ import dbus.service
 
 DBusGMainLoop(set_as_default=True)
 
-from gi.repository import GObject
-
-l = GObject.MainLoop()
+if sys.platform == 'win32':
+  import gobject
+  l = gobject.MainLoop()
+else:
+  from gi.repository import GObject
+  l = GObject.MainLoop()
 
 # Wrapper for dbus api decorator
 dec = dbus.service.method(dbus_interface='de.tuberlin.uebb.modelica3d.api',
@@ -24,12 +43,13 @@ def mod3D_api(**checks):
     def tc(f):
         #print("Decorating %s with %s" % (str(f), checks))
 
-        def checked(s, **p) :    
+        def checked(s, **p) :
             #print("Got: %s %s" % (str(s), str(p)))
             for param in p:
                 if param in checks:
                     res,msg = checks[param](p[param])
                     if not res:
+                        print msg
                         return msg
             return f(s, **p)
 
@@ -37,7 +57,7 @@ def mod3D_api(**checks):
         nf.__name__ = f.__name__
         return dec(nf)
 
-    return tc       
+    return tc
 
 # Check for undefinded/defined references
 def undefined_object(ref) :
@@ -75,7 +95,7 @@ class Modelica3DAPI(dbus.service.Object):
 
     @mod3D_api(reference = undefined_object, length = not_zero)
     def make_box(self, reference, length=1, width=1, height=1, tx=0.0, ty=0.0, tz=1.0):
-        self.omg.proc3d_create_box(self.ctxt, c_char_p(reference), 
+        self.omg.proc3d_create_box(self.ctxt, c_char_p(reference),
                                    c_double(tx), c_double(ty), c_double(tz),
                                    c_double(width), c_double(length), c_double(height))
         return reference
@@ -95,14 +115,14 @@ class Modelica3DAPI(dbus.service.Object):
         self.omg.proc3d_create_cylinder(self.ctxt, c_char_p(reference), c_double(x), c_double(y), c_double(z), c_double(height), c_double(diameter / 2.0))
         return reference
 
-    @mod3D_api(reference = defined_object, frame = positive_int)
-    def move_to(self, reference, x=0.0, y=0.0, z=0.0, frame=1, immediate=False):	        
-        self.omg.proc3d_set_translation(self.ctxt, c_char_p(reference), c_double(x), c_double(y), c_double(z), c_uint(frame));
+    @mod3D_api(reference = defined_object)
+    def move_to(self, reference, x=0.0, y=0.0, z=0.0, t=0.0, immediate=False):
+        self.omg.proc3d_set_translation(self.ctxt, c_char_p(reference), c_double(x), c_double(y), c_double(z), c_double(t));
         return reference
 
-    @mod3D_api(reference = defined_object, frame = positive_int)
-    def scale(self, reference, x=0.0, y=0.0, z=0.0, frame=1, immediate=False):
-        self.omg.proc3d_set_scale(self.ctxt, c_char_p(reference), c_double(x), c_double(y), c_double(z), c_uint(frame))
+    @mod3D_api(reference = defined_object)
+    def scale(self, reference, x=0.0, y=0.0, z=0.0, t=0.0, immediate=False):
+        self.omg.proc3d_set_scale(self.ctxt, c_char_p(reference), c_double(x), c_double(y), c_double(z), c_double(t))
         return reference
 
     @mod3D_api(reference = undefined_material)
@@ -115,55 +135,47 @@ class Modelica3DAPI(dbus.service.Object):
         self.omg.proc3d_apply_material(self.ctxt, c_char_p(reference), c_char_p(material))
         return reference
 
-    @mod3D_api(reference = defined_material, frame = positive_int)
-    def set_material_property(self, reference, prop, value, immediate=True, frame=1):
-        self.omg.proc3d_set_material_property(self.ctxt, c_char_p(reference), c_double(value), c_char_p(prop), c_uint(frame))
+    @mod3D_api(reference = defined_material)
+    def set_material_property(self, reference, prop, value, immediate=True, t=0.0):
+        self.omg.proc3d_set_material_property(self.ctxt, c_char_p(reference), c_double(value), c_char_p(prop), c_double(t))
         return reference
 
-    @mod3D_api(reference = defined_material, frame = positive_int)
-    def set_ambient_color(self, reference, r=0.5, g=0.5, b=0.5, a=0, immediate=True, frame=1):
-        self.omg.proc3d_set_ambient_color(self.ctxt, c_char_p(reference), c_double(r), c_double(g) , c_double(b) , c_double(a), c_uint(frame))
+    @mod3D_api(reference = defined_material)
+    def set_ambient_color(self, reference, r=0.5, g=0.5, b=0.5, a=0, immediate=True, t=0.0):
+        self.omg.proc3d_set_ambient_color(self.ctxt, c_char_p(reference), c_double(r), c_double(g) , c_double(b) , c_double(a), c_double(t))
         return reference
 
-    @mod3D_api(reference = defined_material, frame = positive_int)
-    def set_diffuse_color(self, reference, r=0.5, g=0.5, b=0.5, a=0, immediate=True, frame=1):
-        self.omg.proc3d_set_diffuse_color(self.ctxt, c_char_p(reference), c_double(r), c_double(g) , c_double(b) , c_double(a), c_uint(frame))
+    @mod3D_api(reference = defined_material)
+    def set_diffuse_color(self, reference, r=0.5, g=0.5, b=0.5, a=0, immediate=True, t=0.0):
+        self.omg.proc3d_set_diffuse_color(self.ctxt, c_char_p(reference), c_double(r), c_double(g) , c_double(b) , c_double(a), c_double(t))
         return reference
 
-    @mod3D_api(reference = defined_material, frame = positive_int)
-    def set_specular_color(self, reference, r=0.5, g=0.5, b=0.5, a=0, immediate=True, frame=1):
-        self.omg.proc3d_set_specular_color(self.ctxt, c_char_p(reference), c_double(r), c_double(g) , c_double(b) , c_double(a), c_uint(frame))
+    @mod3D_api(reference = defined_material)
+    def set_specular_color(self, reference, r=0.5, g=0.5, b=0.5, a=0, immediate=True, t=0.0):
+        self.omg.proc3d_set_specular_color(self.ctxt, c_char_p(reference), c_double(r), c_double(g) , c_double(b) , c_double(a), c_double(t))
         return reference
 
-    @mod3D_api(reference = defined_object, frame = positive_int)
-    def rotate(self, reference, 
-               R_1_1, R_1_2, R_1_3, 
-               R_2_1, R_2_2, R_2_3, 
-               R_3_1, R_3_2, R_3_3,                
-               frame=1):
+    @mod3D_api(reference = defined_object)
+    def rotate(self, reference,
+               R_1_1, R_1_2, R_1_3,
+               R_2_1, R_2_2, R_2_3,
+               R_3_1, R_3_2, R_3_3,
+               t=0.0):
         self.omg.proc3d_set_rotation_matrix(self.ctxt, c_char_p(reference),
-                  c_double(R_1_1), c_double(R_1_2), c_double(R_1_3), 
-                  c_double(R_2_1), c_double(R_2_2), c_double(R_2_3), 
-                  c_double(R_3_1), c_double(R_3_2), c_double(R_3_3), 
-                  c_uint(frame))
+                  c_double(R_1_1), c_double(R_1_2), c_double(R_1_3),
+                  c_double(R_2_1), c_double(R_2_2), c_double(R_2_3),
+                  c_double(R_3_1), c_double(R_3_2), c_double(R_3_3),
+                  c_double(t))
         return reference
-    
-    @mod3D_api(fileName = existing_file)
-    def loadFromFile(self, fileName):
-        self.omg.proc3d_load_object(self.ctxt, c_char_p(reference))
+
+    @mod3D_api(reference = undefined_object, fileName = existing_file)
+    def loadFromFile(self, reference, fileName, tx=0.0, ty=0.0, tz=1.0):
+        self.omg.proc3d_load_object(self.ctxt, c_char_p(reference), c_char_p(fileName),
+                                   c_double(tx), c_double(ty), c_double(tz))
+        return reference
+
 
 if __name__ == '__main__':
-    # load DLL or shared object
-    if (platform.system() == 'Linux'):
-        viewer = CDLL("libm3d-osg-gtk.so")  # GTK/OSG backend
-        proc3d = CDLL("libproc3d.so") # procedural 3d 
-    elif (platform.system() == 'Windows'):
-        print("Windows OS not tested yet...")	# eventually add Windows shared library
-        sys.exit()
-    elif (platform.system() == 'Darwin'):
-        print("MacOS Darwin OS not tested yet...") # eventually add MacOS shared library
-        sys.exit()
-
     session_bus = dbus.SessionBus()
     name = dbus.service.BusName("de.tuberlin.uebb.modelica3d.server", session_bus)
     api = Modelica3DAPI(session_bus, "/de/tuberlin/uebb/modelica3d/server")

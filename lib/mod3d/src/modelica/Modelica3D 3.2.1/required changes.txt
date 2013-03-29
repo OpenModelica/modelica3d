@@ -1,0 +1,25 @@
+To use Modelica3D with Modelica 3.2.1, copy this package.mo to ModelicaServices/Modelica3D/package.mo along with modbus and modcount (as in the old version)
+
+Additionally, the model Shape
+
+{{{
+    package Animation "Models and functions for 3-dim. animation"
+      extends Modelica.Icons.Package;
+    model Shape
+        "Different visual shapes with variable size; all data have to be set as modifiers (see info layer)"
+      extends
+          Modelica.Utilities.Internal.PartialModelicaServices.Animation.PartialShape;
+}}}
+
+has to be extended from Modelica3D.PartialShape, i.e. it becomes
+
+{{{
+    package Animation "Models and functions for 3-dim. animation"
+      extends Modelica.Icons.Package;
+    model Shape
+        "Different visual shapes with variable size; all data have to be set as modifiers (see info layer)"
+      extends
+          Modelica.Utilities.Internal.PartialModelicaServices.Animation.PartialShape;
+      extends
+          ModelicaServices.Modelica3D.PartialShape;		  
+}}}

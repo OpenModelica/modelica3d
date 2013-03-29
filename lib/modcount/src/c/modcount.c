@@ -14,7 +14,7 @@ typedef struct _Context {
 } Context;
 
 void* modcount_acquire_context() {
-  Context* ctxt = malloc(sizeof(Context));
+  Context* ctxt = (Context*)malloc(sizeof(Context));
   ctxt -> counter = 0;
   return ctxt;
 }
@@ -42,7 +42,7 @@ void* modcount_acquire_string(const char* content) {
      Instead of char*, we could also use C++ std::string here ...  
    */
   const size_t len = strlen(content);
-  void* buf = calloc(len, sizeof(char));
+  char* buf = (char*)calloc(len+1, sizeof(char));	// +1 since it is 0-terminated
   strcpy(buf, content);
   return buf;
 }
@@ -55,7 +55,7 @@ const char* modcount_get_string(void* str) {
   /* copy, so omc does _not_ free */
   const char* content = (const char*) str;
   const size_t len = strlen(content);
-  char* buf = calloc(len, sizeof(char));
+  char* buf = (char*)calloc(len+1, sizeof(char));	// +1 since it is 0-terminated
   strcpy(buf, content);
   return buf;
 }

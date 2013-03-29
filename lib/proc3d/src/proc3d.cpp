@@ -48,8 +48,8 @@ namespace proc3d {
 
     /* setup ops */
 
-    void proc3d_load_object(void* context, const char* filename) {
-      getContext(context)->setupOps.push(LoadObject(filename));
+    void proc3d_load_object(void* context, const char* name, const char* filename, const double x, const double y, const double z) {
+      getContext(context)->setupOps.push(LoadObject(name, filename, boost::array<double, 3>{x,y,z}));
     }
 	
     void proc3d_create_group(void* context, const char* name) {
@@ -92,46 +92,46 @@ namespace proc3d {
 
     /* delta ops */
 
-    void proc3d_set_rotation_euler(void* context, const char* name, const double x, const double y, const double z, const unsigned int frame) {
-      getContext(context)->deltaOps.push(RotateEuler(name, frame, x, y, z));
+    void proc3d_set_rotation_euler(void* context, const char* name, const double x, const double y, const double z, const double time) {
+      getContext(context)->deltaOps.push(RotateEuler(name, time, x, y, z));
     }
 
     void proc3d_set_rotation_matrix(void* context, const char* name, 
 				    const double r11, const double r12, const double r13, 
 				    const double r21, const double r22, const double r23, 
 				    const double r31, const double r32, const double r33, 
-				    const unsigned int frame) {
+				    const double time) {
       boost::numeric::ublas::bounded_matrix<double, 3, 3> m;
       //TODO: This can probably be rewritten with some fancy boost function, I just can't figure out which one ...
       m(0,0) = r11; m(0,1) = r12; m(0,2) = r13;
       m(1,0) = r21; m(1,1) = r22; m(1,2) = r23;
       m(2,0) = r31; m(2,1) = r32; m(2,2) = r33;
 
-      getContext(context)->deltaOps.push(RotateMatrix(name, frame, m));
+      getContext(context)->deltaOps.push(RotateMatrix(name, time, m));
     }
 
-    void proc3d_set_translation(void* context, const char* name, const double x, const double y, const double z, const unsigned int frame) {
-      getContext(context)->deltaOps.push(Move(name, frame,x,y,z));
+    void proc3d_set_translation(void* context, const char* name, const double x, const double y, const double z, const double time) {
+      getContext(context)->deltaOps.push(Move(name, time,x,y,z));
     }
 
-    void proc3d_set_scale(void* context, const char* name, const double x, const double y, const double z, const unsigned int frame) {
-      getContext(context)->deltaOps.push(Scale(name, frame,x,y,z));
+    void proc3d_set_scale(void* context, const char* name, const double x, const double y, const double z, const double time) {
+      getContext(context)->deltaOps.push(Scale(name, time,x,y,z));
     }
 
-    void proc3d_set_material_property(void* context, const char* name, const char* property, const double value, const unsigned int frame) {
-      getContext(context)->deltaOps.push(SetMaterialProperty(name, frame, property, value));
+    void proc3d_set_material_property(void* context, const char* name, const char* property, const double value, const double time) {
+      getContext(context)->deltaOps.push(SetMaterialProperty(name, time, property, value));
     }
 
-    void proc3d_set_ambient_color(void* context, const char* name, const double r, const double g, const double b, const double a, const unsigned int frame) {
-      getContext(context)->deltaOps.push(SetAmbientColor(name, frame, r, g, b, a));
+    void proc3d_set_ambient_color(void* context, const char* name, const double r, const double g, const double b, const double a, const double time) {
+      getContext(context)->deltaOps.push(SetAmbientColor(name, time, r, g, b, a));
     }
 
-    void proc3d_set_specular_color(void* context, const char* name, const double r, const double g, const double b, const double a, const unsigned int frame) {
-      getContext(context)->deltaOps.push(SetSpecularColor(name, frame, r, g, b, a));
+    void proc3d_set_specular_color(void* context, const char* name, const double r, const double g, const double b, const double a, const double time) {
+      getContext(context)->deltaOps.push(SetSpecularColor(name, time, r, g, b, a));
     }
 
-    void proc3d_set_diffuse_color(void* context, const char* name, const double r, const double g, const double b, const double a, const unsigned int frame) {
-      getContext(context)->deltaOps.push(SetDiffuseColor(name, frame, r, g, b, a));
+    void proc3d_set_diffuse_color(void* context, const char* name, const double r, const double g, const double b, const double a, const double time) {
+      getContext(context)->deltaOps.push(SetDiffuseColor(name, time, r, g, b, a));
     }
 
     /* signals */

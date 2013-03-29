@@ -18,11 +18,17 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define DBUS_STATIC_BUILD   /* In order to link against dbus static lib. */
 #include <stdio.h>
 #include <string.h>
 #include <dbus/dbus.h>
 
 #include "modbus.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 DBusError err;
 
@@ -70,7 +76,7 @@ void modbus_release_bus(void* vconn) {
 }
 
 void* modbus_msg_alloc(const char *target, const char* object, const char *interface, const char* method) {
-  ModbusMessage* message = malloc(sizeof(ModbusMessage));
+  ModbusMessage* message = (ModbusMessage*)malloc(sizeof(ModbusMessage));
 
   message->msg = dbus_message_new_method_call(target, object, interface, method);
   if (NULL == message->msg) { 
@@ -140,7 +146,7 @@ const char* modbus_connection_send_msg(void* vconn, void* vmessage) {
   // free reply and close connection
   dbus_message_unref(reply);
   
-  printf("Returning: %s\n", stat);
+  // printf("Returning: %s\n", stat);
   return stat;
 }
 
@@ -176,3 +182,7 @@ void modbus_msg_add_int(void* message, const char* name, uint32_t value) {
 void modbus_msg_add_string(void* message, const char* name, char* value) {
   return msg_add_entry(message, name, &value, DBUS_TYPE_STRING, DBUS_TYPE_STRING_AS_STRING);
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -25,21 +25,21 @@
 
 namespace proc3d {
   
-  struct get_frame : boost::static_visitor<unsigned int> {
+  struct get_time : boost::static_visitor<double> {
     template <typename T>
-    unsigned int operator()(const T& op) const {
-      return op.frame;
+    double operator()(const T& op) const {
+      return op.time;
     }
   };
 
-  static inline unsigned int frame_of(const AnimOperation& op) {
-    return boost::apply_visitor( get_frame(), op );
+  static inline double time_of(const AnimOperation& op) {
+    return boost::apply_visitor( get_time(), op );
   }
   
   struct compare_frames : boost::static_visitor<bool> {
     template <typename T1, typename T2>
     bool operator()(const T1& op1, const T2& op2) const {
-      return op1.frame > op2.frame;
+      return op1.time > op2.time;
     }
   };
 

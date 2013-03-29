@@ -21,6 +21,11 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 void* moddbus_acquire_session_bus();
 
 void moddbus_release_bus(void* conn);
@@ -36,3 +41,7 @@ void moddbus_msg_add_int(void* msg, char* name, uint32_t value);
 void moddbus_msg_add_string(void* msg, char* name, char* value);
 
 const char* modbus_connection_send_msg(void* vconn, void* vmessage);
+
+#ifdef __cplusplus
+}
+#endif

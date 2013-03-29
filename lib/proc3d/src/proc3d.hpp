@@ -62,26 +62,26 @@ extern "C" {
 
   /* delta ops */
 
-  void proc3d_set_rotation_euler(void* context, const char* name, const double x, const double y, const double z, const unsigned int frame);
+  void proc3d_set_rotation_euler(void* context, const char* name, const double x, const double y, const double z, const double time);
 
   void proc3d_set_rotation_matrix(void* context, const char* name, 
 				 const double r11, const double r12, const double r13, 
 				 const double r21, const double r22, const double r23, 
 				 const double r31, const double r32, const double r33, 
-				 const unsigned int frame);
+				 const double time);
 
-  void proc3d_set_translation(void* context, const char* name, const double x, const double y, const double z, const unsigned int frame);
+  void proc3d_set_translation(void* context, const char* name, const double x, const double y, const double z, const double time);
 
-  void proc3d_set_scale(void* context, const char* name, const double x, const double y, const double z, const unsigned int frame);
+  void proc3d_set_scale(void* context, const char* name, const double x, const double y, const double z, const double time);
 
-  void proc3d_set_material_property(void* context, const char* name, const char* property, const double value, const unsigned int frame);
+  void proc3d_set_material_property(void* context, const char* name, const char* property, const double value, const double time);
 
   /* coloring */
-  void proc3d_set_ambient_color(void* context, const char* name, const double r, const double g, const double b, const double a, const unsigned int frame);
+  void proc3d_set_ambient_color(void* context, const char* name, const double r, const double g, const double b, const double a, const double time);
 
-  void proc3d_set_specular_color(void* context, const char* name, const double r, const double g, const double b, const double a, const unsigned int frame);
+  void proc3d_set_specular_color(void* context, const char* name, const double r, const double g, const double b, const double a, const double time);
 
-  void proc3d_set_diffuse_color(void* context, const char* name, const double r, const double g, const double b, const double a, const unsigned int frame);
+  void proc3d_set_diffuse_color(void* context, const char* name, const double r, const double g, const double b, const double a, const double time);
 
   /* signals */
 
