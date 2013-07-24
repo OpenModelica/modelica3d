@@ -27,5 +27,5 @@ install(TARGETS m3d-osg-gtk
   ARCHIVE DESTINATION lib
 )
 
-
-
+install(FILES "python/dbus-server.py"
+	DESTINATION "lib/omlibrary-modelica3d/osg-gtk")

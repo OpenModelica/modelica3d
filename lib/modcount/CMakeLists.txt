@@ -9,10 +9,10 @@ add_definitions(-fPIC)
 if(USE_OMC)
   # Modelica library to install
   install(DIRECTORY "${modcount_src}/modelica/modcount"
-	DESTINATION "${OMC_MOD_LIB_DIR}/ModelicaServices 1.0")
+    DESTINATION "${OMC_MOD_LIB_DIR}/${MODELICA_SERVICES_LIBRARY}")
 
   # Install library header
-  install(FILES "${modcount_src}/c/modcount.h" DESTINATION ${OMC_INCLUDE_DIR})
+  #install(FILES "${modcount_src}/c/modcount.h" DESTINATION ${OMC_INCLUDE_DIR})
 
   install(TARGETS modcount  
     LIBRARY DESTINATION ${OMC_LIBRARY_DIR}
