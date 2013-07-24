@@ -45,6 +45,7 @@
 #include <string>
 #include <osg/Stats>
 #include <osgDB/ReadFile>
+#include <osgGA/NodeTrackerManipulator>
 
 #include "osggtkdrawingarea.h"
 #include "osgviewerGTK.hpp"
@@ -58,22 +59,15 @@ const char* HELP_TEXT =
 		"<b>Modelica3D 2012</b>"
 		;
 
-bool activate(GtkWidget* widget, gpointer) {
-	GtkWidget* label = gtk_bin_get_child(GTK_BIN(widget));
-
-	std::cout << "MENU: " << gtk_label_get_label(GTK_LABEL(label)) << std::endl;
-
-	return true;
-}
-
 class OSG_GTK_Mod3DViewer : public OSGGTKDrawingArea {
 	GtkWidget* _menu;
-
+	
 	double currentTime;			// time since start of animation in s
 	double tOffset;				// offset
 	double timeScaler;          // scale time to slow things down or speed things up
 	timeval startTime;			// to store start of simulation
 	unsigned int _tid;
+
 	const proc3d::animation_queue& stored_animation;
 	proc3d::animation_queue animation;
 	std::map<std::string, ref_ptr<PositionAttitudeTransform>> nodes;
@@ -81,13 +75,21 @@ class OSG_GTK_Mod3DViewer : public OSGGTKDrawingArea {
 	const osg::ref_ptr<osg::Group> scene_content;
 	const proc3d_osg_interpreter interpreter;
 
-	// A helper function to easily setup our menu entries.
-	void _menuAdd(const std::string& title) {
-		GtkWidget* item = gtk_menu_item_new_with_label(title.c_str());
-
-		gtk_menu_shell_append(GTK_MENU_SHELL(_menu), item);
-
-		g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(activate), 0);
+	bool _setFocus(GtkWidget* widget) {
+		std::string name(gtk_label_get_label(GTK_LABEL(gtk_bin_get_child(GTK_BIN(widget)))));
+		if (nodes.count(name) == 0) {
+			std::cerr << "cannot find node: " << name << std::endl;
+			return false;
+		}
+		osg::PositionAttitudeTransform * node = nodes[name];
+		osg::ref_ptr<osgGA::NodeTrackerManipulator> camTracker = new osgGA::NodeTrackerManipulator();
+		osg::Vec3d pos = node->getPosition();
+		camTracker->setHomePosition(pos + osg::Vec3d(1,1,1), pos, osg::Vec3d(0,0,1));
+		camTracker->setTrackNode(node);
+		camTracker->setTrackerMode(osgGA::NodeTrackerManipulator::NODE_CENTER);
+		camTracker->setRotationMode(osgGA::NodeTrackerManipulator::TRACKBALL);
+		setCameraManipulator(camTracker); 
+		return true;
 	}
 
 	bool _clicked(GtkWidget* widget) {
@@ -189,13 +191,11 @@ public:
 		interpreter(scene_content, nodes, materials),
 		timeScaler(1.0) {
 		scene_content->setName("root");
-		_menuAdd("Option");
-		_menuAdd("Another Option");
-		_menuAdd("Still More Options");
 
 		gtk_widget_show_all(_menu);
 		setSceneData(scene_content);
 		getCamera()->setStats(new osg::Stats("omg"));
+
 
 		restart_animation();
 	}
@@ -209,6 +209,15 @@ public:
 			boost::apply_visitor( interpreter, op );
 			setup.pop();
 		}
+
+		// add menu item for each object
+		for(std::map<std::string, ref_ptr<PositionAttitudeTransform>>::iterator i = nodes.begin(); i!= nodes.end(); i++) {
+			std::cout << "adding menu item for node: " << i->first << std::endl;
+			GtkWidget* item = gtk_menu_item_new_with_label((i->first).c_str());
+			gtk_menu_shell_append(GTK_MENU_SHELL(_menu), item);
+			g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(OSG_GTK_Mod3DViewer::setFocus), this);
+		}
+		gtk_widget_show_all(_menu);
 
 		/* activate first frame */
 		currentTime = 0.0;
@@ -259,6 +268,11 @@ public:
 	// Public so that we can use this as a callback in main().
 	static bool clicked(GtkWidget* widget, gpointer self) {
 		return static_cast<OSG_GTK_Mod3DViewer*>(self)->_clicked(widget);
+	}
+	
+	// Public so that we can use this as a callback in main().
+	static bool setFocus(GtkWidget* widget, gpointer self) {
+		return static_cast<OSG_GTK_Mod3DViewer*>(self)->_setFocus(widget);
 	}
 
 	static bool timeout(void* self) {
