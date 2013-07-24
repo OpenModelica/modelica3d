@@ -84,9 +84,9 @@ class OSG_GTK_Mod3DViewer : public OSGGTKDrawingArea {
 		osg::PositionAttitudeTransform * node = nodes[name];
 		osg::ref_ptr<osgGA::NodeTrackerManipulator> camTracker = new osgGA::NodeTrackerManipulator();
 		osg::Vec3d pos = node->getPosition();
-		camTracker->setHomePosition(pos + osg::Vec3d(1,1,1), pos, osg::Vec3d(0,0,1));
-		camTracker->setTrackNode(node);
-		camTracker->setTrackerMode(osgGA::NodeTrackerManipulator::NODE_CENTER);
+		camTracker->setHomePosition(pos + osg::Vec3d(1,1,1), pos, osg::Vec3d(0,0,1), false);
+		camTracker->setTrackNode(node->getChild(0));
+		camTracker->setTrackerMode(osgGA::NodeTrackerManipulator::NODE_CENTER_AND_ROTATION);
 		camTracker->setRotationMode(osgGA::NodeTrackerManipulator::TRACKBALL);
 		setCameraManipulator(camTracker); 
 		return true;
