@@ -195,8 +195,8 @@ public:
 		gtk_widget_show_all(_menu);
 		setSceneData(scene_content);
 		getCamera()->setStats(new osg::Stats("omg"));
-
-
+		getCamera()->setNearFarRatio(0.0000000000001f); 
+		getCamera()->setComputeNearFarMode(osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
 		restart_animation();
 	}
 
