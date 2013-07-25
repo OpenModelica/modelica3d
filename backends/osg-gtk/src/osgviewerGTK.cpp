@@ -71,6 +71,7 @@ class OSG_GTK_Mod3DViewer : public OSGGTKDrawingArea {
 	const proc3d::animation_queue& stored_animation;
 	proc3d::animation_queue animation;
 	std::map<std::string, ref_ptr<PositionAttitudeTransform>> nodes;
+	std::map<std::string, ref_ptr<PositionAttitudeTransform>> shapes;
 	std::map<std::string, ref_ptr<Material>> materials;
 	const osg::ref_ptr<osg::Group> scene_content;
 	const proc3d_osg_interpreter interpreter;
@@ -188,15 +189,21 @@ public:
 		_tid              (0),
 		stored_animation  (q),
 		scene_content(new osg::Group()),
-		interpreter(scene_content, nodes, materials),
+		interpreter(scene_content, nodes, shapes, materials),
 		timeScaler(1.0) {
 		scene_content->setName("root");
 
 		gtk_widget_show_all(_menu);
 		setSceneData(scene_content);
 		getCamera()->setStats(new osg::Stats("omg"));
+
+		// fix clipping planes
 		getCamera()->setNearFarRatio(0.0000000000001f); 
 		getCamera()->setComputeNearFarMode(osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
+
+		// updates lighting when objects are scaled
+		scene_content->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
+
 		restart_animation();
 	}
 
@@ -212,7 +219,7 @@ public:
 
 		// add menu item for each object
 		for(std::map<std::string, ref_ptr<PositionAttitudeTransform>>::iterator i = nodes.begin(); i!= nodes.end(); i++) {
-			std::cout << "adding menu item for node: " << i->first << std::endl;
+			//std::cout << "adding menu item for node: " << i->first << std::endl;
 			GtkWidget* item = gtk_menu_item_new_with_label((i->first).c_str());
 			gtk_menu_shell_append(GTK_MENU_SHELL(_menu), item);
 			g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(OSG_GTK_Mod3DViewer::setFocus), this);
@@ -248,13 +255,13 @@ public:
 	    useconds = now.tv_usec - startTime.tv_usec;
 		currentTime = tOffset + timeScaler*(seconds + 1e-6*useconds);
 
-		// std::cout << "Update at t=" << currentTime << std::endl;
+		//std::cout << "Update at t=" << currentTime << std::endl;
 
 		if (animation.empty()) {
 			restart_animation();
 		} else {
 			AnimOperation op = animation.top();
-			// std::cout << "Anim command for t= " << proc3d::time_of(op) << std::endl;
+			//std::cout << "Anim command for t= " << proc3d::time_of(op) << std::endl;
 			while (proc3d::time_of(op) <= currentTime && !animation.empty()) {
 				boost::apply_visitor( interpreter, op );
 				animation.pop();

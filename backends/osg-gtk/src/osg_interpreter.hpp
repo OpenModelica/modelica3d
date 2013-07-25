@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include <cmath>
+
 #include <osg/ShapeDrawable>
 #include <osg/Shape>
 #include <osg/Node>
@@ -39,6 +41,7 @@ using namespace proc3d;
 using namespace osg;
 
 typedef std::map<std::string, ref_ptr<PositionAttitudeTransform>> t_node_cache;
+typedef std::map<std::string, ref_ptr<PositionAttitudeTransform>> t_shape_cache;
 typedef std::map<std::string, ref_ptr<Material>> t_material_cache;
 
 struct proc3d_osg_interpreter : boost::static_visitor<> {
@@ -46,10 +49,11 @@ private:
   const ref_ptr<Group> root;
 public:
   t_node_cache& node_cache;
+  t_shape_cache & shape_cache;
   t_material_cache& material_cache;
 
-  proc3d_osg_interpreter(const ref_ptr<Group> r, t_node_cache& c, t_material_cache& m) :
-    root(r), node_cache(c), material_cache(m) {}
+  proc3d_osg_interpreter(const ref_ptr<Group> r, t_node_cache& c, t_shape_cache & s, t_material_cache& m) :
+    root(r), node_cache(c), shape_cache(s), material_cache(m) {}
 
   void operator()(const CreateGroup& cmd) const {
 
@@ -67,22 +71,22 @@ public:
 
   void operator()(const ApplyMaterial& cmd) const {
 
-	// do not apply material to file objects (where target name begins with "file")
-	// a better idea is needed -> are the colors specified in modelica to be ignored or not?
-	const std::string FILE("file");
-	if (cmd.name.compare(0, FILE.length(), FILE) == 0) return;
+  // do not apply material to file objects (where target name begins with "file")
+  // a better idea is needed -> are the colors specified in modelica to be ignored or not?
+  const std::string FILE("file");
+  if (cmd.name.compare(0, FILE.length(), FILE) == 0) return;
 
     if (node_cache.find(cmd.name) == node_cache.end()) {
-      std::cout << "Inconsistent naming. Did not find " << cmd.name << std::endl;
+      //std::cout << "Inconsistent naming. Did not find " << cmd.name << std::endl;
       return;
     }
 
     if (material_cache.find(cmd.target) == material_cache.end()) {
-      std::cout << "Inconsistent naming. Did not find material: " << cmd.target << std::endl;
+      //std::cout << "Inconsistent naming. Did not find material: " << cmd.target << std::endl;
       return;
     }
 
-    std::cout << "Apply material " << cmd.target << " on " << cmd.name << std::endl;
+    //std::cout << "Apply material " << cmd.target << " on " << cmd.name << std::endl;
 
     const ref_ptr<Material> mat = material_cache[cmd.target];
 
@@ -90,120 +94,227 @@ public:
     stateSet->setAttribute(mat.get());
   }
 
-  void operator()(const CreateSphere& cmd) const {
-    const ref_ptr<ShapeDrawable> shape =
-      new ShapeDrawable(new Sphere(Vec3(cmd.radius,0,0), cmd.radius));
-    const ref_ptr<Geode> geode = new Geode();
-    geode->addDrawable(shape);
+  void operator()(const CreateShape& cmd) const {
 
+    //std::cout 
+      //<< "name: " << cmd.name << "\n"
+      //<< "descr: " << cmd.descr << "\n"
+      //<< "length: " << cmd.length << "\n"
+      //<< "width: " << cmd.width << "\n"
+      //<< "height: " << cmd.height << "\n"
+      //<< "x: " << cmd.at[0] << "\n"
+      //<< "y: " << cmd.at[1] << "\n"
+      //<< "z: " << cmd.at[2] << "\n"
+      //<< "extra: " << cmd.extra << "\n"
+      //<< std::endl;
+
+    // generic setup
+    const char * descr = cmd.descr.c_str();
+    const ref_ptr<Geode> geode = new Geode();
+    const ref_ptr<PositionAttitudeTransform> shape = 
+      new PositionAttitudeTransform();
+    shape->addChild(geode);
     const ref_ptr<PositionAttitudeTransform> trans =
       new PositionAttitudeTransform();
-    trans->addChild(geode);
+    trans->addChild(shape);
     trans->setName(cmd.name);
 
+    // shape specific
+    if (!strcmp(descr, "cylinder")) {
+      // create geometry
+      geode->addDrawable(new ShapeDrawable(new Cylinder));
+
+      // set size
+      shape->setScale(osg::Vec3(cmd.width, cmd.width, cmd.height));
+
+      // target vector
+      osg::Vec3 target = osg::Vec3(cmd.at[0], cmd.at[1], cmd.at[2]);
+      target.normalize();
+      target *= cmd.height;
+      
+      // translate to center
+      shape->setPosition(target / 2.0);
+
+      // rotate to target
+      const Vec3 z = osg::Vec3(0,0,1);
+      Quat q; q.makeRotate(z, target);
+      shape->setAttitude(q);
+
+    } else if (!strcmp(descr, "cone")) {
+      // create geometry
+      geode->addDrawable(new ShapeDrawable(new Cone));
+
+      // set size
+      shape->setScale(osg::Vec3(cmd.width, cmd.width, cmd.height));
+
+      // target vector
+      osg::Vec3 target = osg::Vec3(cmd.at[0], cmd.at[1], cmd.at[2]);
+      target.normalize();
+      target *= cmd.height;
+      
+      // rotate to target
+      const Vec3 z = osg::Vec3(0,0,1);
+      Quat q; q.makeRotate(z, target);
+      shape->setAttitude(q);
+
+    } else if (!strcmp(descr, "sphere")) {
+      // create geometry
+      geode->addDrawable(new ShapeDrawable(new Sphere));
+
+      // translate to center
+      shape->setPosition(Vec3(cmd.width/2, 0, 0));
+
+      // null rotation
+      shape->setAttitude(Quat(0, Vec3(1,0,0)));
+
+      // set size
+      shape->setScale(osg::Vec3(cmd.width/2, cmd.width/2, cmd.width/2));
+
+    } else if (!strcmp(descr, "box")) { 
+      // create geometry
+      geode->addDrawable(new ShapeDrawable(new Box));
+
+      // set size
+      shape->setScale(osg::Vec3(cmd.length/2, cmd.width/2, cmd.height/2));
+
+      // target vector
+      osg::Vec3 target = osg::Vec3(cmd.at[0], cmd.at[1], cmd.at[2]);
+      target.normalize();
+      target *= cmd.height;
+      
+      // translate to center
+      shape->setPosition(target / 2.0);
+
+      // rotate to target
+      const Vec3 z = osg::Vec3(0,0,1);
+      Quat q; q.makeRotate(z, target);
+      shape->setAttitude(q);
+
+    } else if (!strcmp(descr, "plane")) { 
+      // create geometry
+      geode->addDrawable(new ShapeDrawable(new Box));
+
+      // set size
+      shape->setScale(osg::Vec3(cmd.length/2, cmd.width/2, 0.01));
+
+      // target vector
+      osg::Vec3 target = osg::Vec3(cmd.at[0], cmd.at[1], cmd.at[2]);
+      target.normalize();
+      target *= cmd.height;
+      
+      // rotate to target
+      const Vec3 z = osg::Vec3(0,0,1);
+      Quat q; q.makeRotate(z, target);
+      shape->setAttitude(q);
+
+    } else {
+      std::cerr << "shape: " << descr << " not implemented" << std::endl;
+      return;
+    }
+
+    // add to caches and scene
     node_cache[cmd.name] = trans;
+    shape_cache[cmd.name] = shape;
     root->addChild(trans);
   }
 
-  void operator()(const CreateBox& cmd) const {
-    osg::Vec3 target = osg::Vec3(cmd.at[0], cmd.at[1], cmd.at[2]);
-    target.normalize();
-    target *= cmd.height;
-    const Vec3 center = target / 2.0;
+  void operator()(const UpdateShape& cmd) const {
+    //std::cout 
+      //<< "name: " << cmd.name << "\n"
+      //<< "descr: " << cmd.descr << "\n"
+      //<< "time: " << cmd.time << "\n"
+      //<< "length: " << cmd.length << "\n"
+      //<< "width: " << cmd.width << "\n"
+      //<< "height: " << cmd.height << "\n"
+      //<< "x: " << cmd.at[0] << "\n"
+      //<< "y: " << cmd.at[1] << "\n"
+      //<< "z: " << cmd.at[2] << "\n"
+      //<< "extra: " << cmd.extra << "\n"
+      //<< std::endl;
 
-    //Rotate to target
-    const Vec3 z = osg::Vec3(0,0,1);
-    Quat q; q.makeRotate(z, target);
+    // get shape
+    if (shape_cache.find(cmd.name) == shape_cache.end()) {
+      std::cout << "Could not find shape for update shape: " << cmd.name << std::endl;
+      return;
+    }
+    osg::PositionAttitudeTransform * shape = shape_cache[cmd.name];
 
-    const ref_ptr<Box> shape = new Box(center, cmd.width, cmd.length, cmd.height);
-    const ref_ptr<ShapeDrawable> draw = new ShapeDrawable(shape);
+    const char * descr = cmd.descr.c_str();
 
-    const ref_ptr<Geode> geode = new Geode();
-    geode->addDrawable(draw);
+    if (!strcmp(descr, "cylinder")) {
+      // set size
+      shape->setScale(Vec3d(cmd.width/2, cmd.width/2, cmd.length));
+      
+      // translate to center
+      osg::Vec3 target = osg::Vec3(cmd.at[0], cmd.at[1], cmd.at[2]);
+      target.normalize();
+      target *= cmd.length;
+      const Vec3 center = target / 2.0;
+      shape->setPosition(center);
 
-    const ref_ptr<PositionAttitudeTransform> trans =
-      new PositionAttitudeTransform();
-    trans->addChild(geode);
-    trans->setName(cmd.name);
+      // rotate to target
+      const Vec3 z = osg::Vec3(0,0,1);
+      Quat q; q.makeRotate(z, target);
+      shape->setAttitude(q);
+    
+    } else if (!strcmp(descr, "cone")) { 
+      // set size
+      shape->setScale(osg::Vec3(cmd.width/2, cmd.width/2, cmd.height));
 
-    shape->setRotation(q);
+      // target vector
+      osg::Vec3 target = osg::Vec3(cmd.at[0], cmd.at[1], cmd.at[2]);
+      target.normalize();
+      target *= cmd.height;
+ 
+      // rotate to target
+      const Vec3 z = osg::Vec3(0,0,1);
+      Quat q; q.makeRotate(z, target);
+      shape->setAttitude(q);
 
-    node_cache[cmd.name] = trans;
-    root->addChild(trans);
-  }
+    } else if (!strcmp(descr, "sphere")) { 
+      // set size
+      shape->setScale(osg::Vec3(cmd.width/2, cmd.width/2, cmd.width/2));
 
-  void operator()(const CreateCylinder& cmd) const {
-    osg::Vec3 target = osg::Vec3(cmd.at[0], cmd.at[1], cmd.at[2]);
-    target.normalize();
-    target *= cmd.height;
-    const Vec3 center = target / 2.0;
+    } else if (!strcmp(descr, "box")) { 
+      // set size
+      shape->setScale(osg::Vec3(cmd.length/2, cmd.width/2, cmd.height/2));
 
-    //Rotate to target
-    const Vec3 z = osg::Vec3(0,0,1);
-    Quat q; q.makeRotate(z, target);
+      // target vector
+      osg::Vec3 target = osg::Vec3(cmd.at[0], cmd.at[1], cmd.at[2]);
+      target.normalize();
+      target *= cmd.height;
+      
+      // translate to center
+      shape->setPosition(target / 2.0);
 
-    const ref_ptr<Cylinder> shape = new Cylinder(center, cmd.radius, cmd.height);
-    const ref_ptr<ShapeDrawable> draw = new ShapeDrawable(shape);
+      // rotate to target
+      const Vec3 z = osg::Vec3(0,0,1);
+      Quat q; q.makeRotate(z, target);
+      shape->setAttitude(q);
 
-    const ref_ptr<Geode> geode = new Geode();
-    geode->addDrawable(draw);
+    } else if (!strcmp(descr, "plane")) { 
+      // set size
+      shape->setScale(osg::Vec3(cmd.length, cmd.width, 0.01));
 
-    const ref_ptr<PositionAttitudeTransform> trans =
-      new PositionAttitudeTransform();
-    trans->addChild(geode);
-    trans->setName(cmd.name);
+      // target vector
+      osg::Vec3 target = osg::Vec3(cmd.at[0], cmd.at[1], cmd.at[2]);
+      target.normalize();
+      target *= cmd.height;
+      
+      // rotate to target
+      const Vec3 z = osg::Vec3(0,0,1);
+      Quat q; q.makeRotate(z, target);
+      shape->setAttitude(q);
 
-    shape->setRotation(q);
+    } else {
+      std::cerr << "shape: " << descr << " not implemented" << std::endl;
+    }
 
-    node_cache[cmd.name] = trans;
-    root->addChild(trans);
-  }
-
-  void operator()(const CreateCone& cmd) const {
-    osg::Vec3 target = osg::Vec3(cmd.at[0], cmd.at[1], cmd.at[2]);
-    target.normalize();
-    target *= cmd.height;
-
-    //Rotate to target
-    const Vec3 z = osg::Vec3(0,0,1);
-    Quat q; q.makeRotate(z, target);
-
-    const ref_ptr<Cone> shape = new Cone(Vec3d(0,0,0), cmd.radius, cmd.height);
-    const ref_ptr<ShapeDrawable> draw = new ShapeDrawable(shape);
-
-    const ref_ptr<Geode> geode = new Geode();
-    geode->addDrawable(draw);
-
-    const ref_ptr<PositionAttitudeTransform> trans =
-      new PositionAttitudeTransform();
-    trans->addChild(geode);
-    trans->setName(cmd.name);
-
-    shape->setRotation(q);
-
-    node_cache[cmd.name] = trans;
-    root->addChild(trans);
-  }
-
-  void operator()(const CreatePlane& cmd) const {
-    const ref_ptr<Shape> shape = new Box(Vec3(0,0,0), cmd.width, cmd.length, 0.05);
-    const ref_ptr<ShapeDrawable> draw = new ShapeDrawable(shape);
-
-    const ref_ptr<Geode> geode = new Geode();
-    geode->addDrawable(draw);
-
-    const ref_ptr<PositionAttitudeTransform> trans =
-      new PositionAttitudeTransform();
-    trans->addChild(geode);
-    trans->setName(cmd.name);
-
-    node_cache[cmd.name] = trans;
-    root->addChild(trans);
   }
 
   void operator()(const Move& cmd) const {
     if (node_cache.find(cmd.name) == node_cache.end()) {
-      std::cout << "Inconsistent naming. Did not find " << cmd.name << std::endl;
+      //std::cout << "Inconsistent naming. Did not find " << cmd.name << std::endl;
       return;
     }
 
@@ -212,7 +323,7 @@ public:
 
   void operator()(const Scale& cmd) const {
     if (node_cache.find(cmd.name) == node_cache.end()) {
-      std::cout << "Inconsistent naming. Did not find " << cmd.name << std::endl;
+      //std::cout << "Inconsistent naming. Did not find " << cmd.name << std::endl;
       return;
     }
 
@@ -221,7 +332,7 @@ public:
 
   void operator()(const RotateEuler& cmd) const {
     if (node_cache.find(cmd.name) == node_cache.end()) {
-      std::cout << "Inconsistent naming. Did not find " << cmd.name << std::endl;
+      //std::cout << "Inconsistent naming. Did not find " << cmd.name << std::endl;
       return;
     }
 
@@ -231,7 +342,7 @@ public:
 
   void operator()(const RotateMatrix& cmd) const {
     if (node_cache.find(cmd.name) == node_cache.end()) {
-      std::cout << "Inconsistent naming. Did not find " << cmd.name << std::endl;
+      //std::cout << "Inconsistent naming. Did not find " << cmd.name << std::endl;
       return;
     }
 
@@ -248,7 +359,7 @@ public:
 
   void operator()(const SetMaterialProperty& cmd) const {
     if (material_cache.find(cmd.name) == material_cache.end()) {
-      std::cout << "Inconsistent naming. Did not find material: " << cmd.name << std::endl;
+      //std::cout << "Inconsistent naming. Did not find material: " << cmd.name << std::endl;
       return;
     }
     //no properties defined yet ...
@@ -260,17 +371,17 @@ public:
 
   void operator()(const SetAmbientColor& cmd) const {
     if (material_cache.find(cmd.name) == material_cache.end()) {
-      std::cout << "Inconsistent naming. Did not find material: " << cmd.name << std::endl;
+      //std::cout << "Inconsistent naming. Did not find material: " << cmd.name << std::endl;
       return;
     }
 
-    std::cout << "Setting ambient color on " << cmd.name << " at t= " << cmd.time << std::endl;
+    //std::cout << "Setting ambient color on " << cmd.name << " at t= " << cmd.time << std::endl;
     material_cache[cmd.name]->setAmbient(Material::FRONT, vec4_from_array(cmd.color));
   }
 
   void operator()(const SetDiffuseColor& cmd) const {
     if (material_cache.find(cmd.name) == material_cache.end()) {
-      std::cout << "Inconsistent naming. Did not find material: " << cmd.name << std::endl;
+      //std::cout << "Inconsistent naming. Did not find material: " << cmd.name << std::endl;
       return;
     }
 
@@ -279,7 +390,7 @@ public:
 
   void operator()(const SetSpecularColor& cmd) const {
     if (material_cache.find(cmd.name) == material_cache.end()) {
-      std::cout << "Inconsistent naming. Did not find material: " << cmd.name << std::endl;
+      //std::cout << "Inconsistent naming. Did not find material: " << cmd.name << std::endl;
       return;
     }
 
@@ -341,4 +452,4 @@ public:
   }
 };
 
-
+// vim:ts=2:sw=2:expandtab

@@ -34,27 +34,16 @@ extern "C" {
 
   /* setup ops */
 
-  void proc3d_load_object(void* context, const char* filename);
+  void proc3d_load_object(void* context, const char* name, const char* filename, const double x, const double y, const double z);
+
+  void proc3d_create_shape(void* context, const char* name, const char * descr, 
+			      const double length, const double width, const double height, 
+			      const double x, const double y, const double z, 
+			      const double extra);
 	
   void proc3d_create_group(void* context, const char* name);
 
   void proc3d_create_material(void* context, const char* name, const double r, const double g, const double b, const double a);
-
-  void proc3d_create_sphere(void* context, const char* name, const double radius);
-
-  void proc3d_create_box(void* context, const char* name, 
-			 const double tx, const double ty, const double tz,
-			 const double width, const double length, const double height);
-
-  void proc3d_create_plane(void* context, const char* name, const double width, const double length);
-
-  void proc3d_create_cylinder(void* context, const char* name, 
-			      const double tx, const double ty, const double tz, 
-			      const double height, const double radius);
-
-  void proc3d_create_cone(void* context, const char* name, 
-			  const double tx, const double ty, const double tz, 
-			  const double height, const double radius);
 
   void proc3d_add_to_group(void* context, const char* name, const char* target);
 
@@ -75,6 +64,11 @@ extern "C" {
   void proc3d_set_scale(void* context, const char* name, const double x, const double y, const double z, const double time);
 
   void proc3d_set_material_property(void* context, const char* name, const char* property, const double value, const double time);
+
+  void proc3d_update_shape(void* context, const char* name, const char * descr, 
+			      const double length, const double width, const double height, 
+			      const double x, const double y, const double z, 
+			      const double extra, const double time);
 
   /* coloring */
   void proc3d_set_ambient_color(void* context, const char* name, const double r, const double g, const double b, const double a, const double time);
