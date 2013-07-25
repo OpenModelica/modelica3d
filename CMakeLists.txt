@@ -4,7 +4,7 @@ project(modelica3d_dbus CXX C)
 option(USE_OMC "use openmodelica" ON)
 option(OSG_BACKEND "build openscenegraph backed" ON)
 option(INSTALL_EXAMPLES "install examples" ON)
-option(BLENDER_BACKEND "build blender backed" OFF)
+option(BLENDER_BACKEND "build blender backed" ON)
 set(MODELICA_SERVICES_LIBRARY "ModelicaServices 3.2.1 modelica3d" CACHE STRING "Modelica Services library name")
 
 set(CPACK_PACKAGE_CONTACT "openmodelica@ida.liu.se")
@@ -29,7 +29,7 @@ if(OSG_BACKEND)
 endif(OSG_BACKEND)
 
 if(BLENDER_BACKEND)
-  add_subdirectory(backends/blender-2.59)
+  add_subdirectory(backends/blender2.59)
 endif(BLENDER_BACKEND)
 
 if(INSTALL_EXAMPLES)

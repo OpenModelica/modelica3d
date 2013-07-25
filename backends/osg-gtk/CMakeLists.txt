@@ -13,7 +13,13 @@ link_directories(${GTK_LIBRARY_DIRS} ${GTKGL_LIBRARY_DIRS})
 
 set(osg-gtk_src "${CMAKE_SOURCE_DIR}/backends/osg-gtk/src/")
 
-add_library(m3d-osg-gtk SHARED "${osg-gtk_src}/osgviewerGTK.cpp" "${osg-gtk_src}/osggtkdrawingarea.cpp")
+add_library(m3d-osg-gtk SHARED
+	"${osg-gtk_src}/osg_interpreter.hpp"
+	"${osg-gtk_src}/osgviewerGTK.hpp"
+	"${osg-gtk_src}/osgviewerGTK.cpp"
+	"${osg-gtk_src}/osggtkdrawingarea.h"
+	"${osg-gtk_src}/osggtkdrawingarea.cpp"
+	)
 add_dependencies(m3d-osg-gtk proc3d)
 
 target_link_libraries(m3d-osg-gtk ${OPENSCENEGRAPH_LIBRARIES} ${GTK_LIBRARIES} ${GTKGL_LIBRARIES} proc3d)
