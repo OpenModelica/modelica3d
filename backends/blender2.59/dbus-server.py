@@ -107,6 +107,7 @@ class Modelica3DAPI(dbus.service.Object):
     @mod3D_api(reference = defined_material, frame = positive_int)
     def set_material_property(self, reference, prop, value, immediate=True, frame=1):
         context.scene.frame_set(frame=frame)
+        o = data.materials[reference]
 
         if immediate:
             o.keyframe_insert(prop, frame=frame - 1)
