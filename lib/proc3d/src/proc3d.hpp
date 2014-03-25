@@ -35,7 +35,7 @@ extern "C" {
 
   /* setup ops */
 
-  void proc3d_load_object(void* context, const char* filename);
+  void proc3d_load_object(void* context, const char* name, const char* filename, const double x, const double y, const double z);
 	
   void proc3d_create_group(void* context, const char* name);
 
