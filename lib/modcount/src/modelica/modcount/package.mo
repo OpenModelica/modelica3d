@@ -1,6 +1,6 @@
 /*
   This file is part of the Modelica3D package.
-  
+
   Copyright (C) 2012-current year  Christoph Höger and Technical University of Berlin
 
   This program is free software: you can redistribute it and/or modify
@@ -25,8 +25,8 @@ package modcount
 
   class Context
     extends ExternalObject;
-    
-    function constructor    
+
+    function constructor
       annotation(Include = "#include <modcount.h>", Library = {"modcount"});
       output Context context;
       external "C" context = modcount_acquire_context();
@@ -37,7 +37,7 @@ package modcount
       input Context context;
       external "C" modcount_release_context(context);
     end destructor;
-  end Context;  
+  end Context;
 
   function set
     annotation(Include = "#include <modcount.h>", Library = {"modcount"});
@@ -46,7 +46,7 @@ package modcount
     output Integer out;
     external "C" out = modcount_set(c, i);
   end set;
-  
+
   function get
     annotation(Include = "#include <modcount.h>", Library = {"modcount"});
     input Context c;
@@ -54,7 +54,7 @@ package modcount
     external "C" i = modcount_get(c);
   end get;
 
-  function increase_get    
+  function increase_get
     input Context c;
     output Integer i;
     algorithm
@@ -65,7 +65,7 @@ package modcount
   class HeapString
     extends ExternalObject;
 
-    function constructor    
+    function constructor
       annotation(Include = "#include <modcount.h>", Library = {"modcount"});
       input String content;
       output HeapString str;
@@ -79,12 +79,18 @@ package modcount
     end destructor;
   end HeapString;
 
+  function setString
+    input HeapString str;
+    input String val;
+    annotation(Include = "#include <modcount.h>", Library = {"modcount"});
+    external "C" modcount_set_string(str,val);
+  end setString;
+
   function getString
     input HeapString str;
     output String val;
     annotation(Include = "#include <modcount.h>", Library = {"modcount"});
     external "C" val = modcount_get_string(str);
   end getString;
-  
 
 end modcount;
