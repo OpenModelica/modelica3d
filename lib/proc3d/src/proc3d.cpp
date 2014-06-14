@@ -50,7 +50,7 @@ namespace proc3d {
     /* setup ops */
 
     void proc3d_load_object(void* context, const char* name, const char* filename, const double x, const double y, const double z) {
-      getContext(context)->setupOps.push(LoadObject(name, filename, boost::array<double, 3>{x,y,z}));
+      getContext(context)->setupOps.push(LoadObject(name, filename, boost::array<double, 3>{{x,y,z}}));
     }
 	
     void proc3d_create_group(void* context, const char* name) {
@@ -68,7 +68,7 @@ namespace proc3d {
     void proc3d_create_box(void* context, const char* name, 
 			   const double x, const double y, const double z,
 			   const double width, const double length, const double height) {
-      getContext(context)->setupOps.push(CreateBox(name, width, length, height, boost::array<double, 3>{x,y,z}));
+      getContext(context)->setupOps.push(CreateBox(name, width, length, height, boost::array<double, 3>{{x,y,z}}));
     }
 
     void proc3d_create_plane(void* context, const char* name, const double width, const double length) {
@@ -76,11 +76,11 @@ namespace proc3d {
     }
 
     void proc3d_create_cylinder(void* context, const char* name, const double x, const double y, const double z, const double height, const double radius) {
-      getContext(context)->setupOps.push(CreateCylinder{name, radius, height, boost::array<double, 3>{x,y,z}});
+      getContext(context)->setupOps.push(CreateCylinder{name, radius, height, boost::array<double, 3>{{x,y,z}}});
     }
 
     void proc3d_create_cone(void* context, const char* name, const double x, const double y, const double z, const double height, const double radius) {
-      getContext(context)->setupOps.push(CreateCone(name, radius, height, boost::array<double, 3>{x,y,z}));
+      getContext(context)->setupOps.push(CreateCone(name, radius, height, boost::array<double, 3>{{x,y,z}}));
     }
 
     void proc3d_add_to_group(void* context, const char* name, const char* target) {

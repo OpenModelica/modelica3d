@@ -17,7 +17,7 @@ class OSGGTKDrawingArea : public osgViewer::Viewer {
     GdkGLConfig*   _glconfig;
     GdkGLContext*  _context;
     GdkGLDrawable* _drawable;
-    
+
     osg::ref_ptr<osgViewer::GraphicsWindowEmbedded> _gw;
 
     unsigned int _state;
@@ -190,13 +190,11 @@ public:
     bool gtkGLSwap() {
         if(_drawable and gdk_gl_drawable_is_double_buffered(_drawable)) {
             gdk_gl_drawable_swap_buffers(_drawable);
-
             return true;
-        }
-
-        else {
+        } else {
+#if !defined(__APPLE__)
             glFlush();
-
+#endif
             return false;
         }
     }
