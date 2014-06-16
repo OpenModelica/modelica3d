@@ -1,6 +1,6 @@
 /*
   This file is part of the Modelica3D package.
-  
+
   Copyright (C) 2012-current year  Christoph Höger and Technical University of Berlin
 
   This program is free software: you can redistribute it and/or modify
@@ -50,11 +50,12 @@ namespace proc3d {
     /* setup ops */
 
     void proc3d_load_object(void* context, const char* name, const char* filename, const double x, const double y, const double z) {
-      getContext(context)->setupOps.push(LoadObject(name, filename, boost::array<double, 3>{{x,y,z}}));
+      boost::array<double, 3> arr = boost::array<double, 3>({x,y,z});
+      getContext(context)->setupOps.push(LoadObject(name, filename, arr));
     }
-	
+
     void proc3d_create_group(void* context, const char* name) {
-      getContext(context)->setupOps.push(CreateGroup(name));    
+      getContext(context)->setupOps.push(CreateGroup(name));
     }
 
     void proc3d_create_material(void* context, const char* name, const double r, const double g, const double b, const double a) {
@@ -65,10 +66,11 @@ namespace proc3d {
       getContext(context)->setupOps.push(CreateSphere(name, radius));
     }
 
-    void proc3d_create_box(void* context, const char* name, 
-			   const double x, const double y, const double z,
-			   const double width, const double length, const double height) {
-      getContext(context)->setupOps.push(CreateBox(name, width, length, height, boost::array<double, 3>{{x,y,z}}));
+    void proc3d_create_box(void* context, const char* name,
+         const double x, const double y, const double z,
+         const double width, const double length, const double height) {
+      boost::array<double, 3> arr = boost::array<double, 3>({x,y,z});
+      getContext(context)->setupOps.push(CreateBox(name, width, length, height, arr));
     }
 
     void proc3d_create_plane(void* context, const char* name, const double width, const double length) {
@@ -76,11 +78,13 @@ namespace proc3d {
     }
 
     void proc3d_create_cylinder(void* context, const char* name, const double x, const double y, const double z, const double height, const double radius) {
-      getContext(context)->setupOps.push(CreateCylinder{name, radius, height, boost::array<double, 3>{{x,y,z}}});
+      boost::array<double, 3> arr = boost::array<double, 3>({x,y,z});
+      getContext(context)->setupOps.push(CreateCylinder{name, radius, height, arr});
     }
 
     void proc3d_create_cone(void* context, const char* name, const double x, const double y, const double z, const double height, const double radius) {
-      getContext(context)->setupOps.push(CreateCone(name, radius, height, boost::array<double, 3>{{x,y,z}}));
+      boost::array<double, 3> arr = boost::array<double, 3>({x,y,z});
+      getContext(context)->setupOps.push(CreateCone(name, radius, height, arr));
     }
 
     void proc3d_add_to_group(void* context, const char* name, const char* target) {
@@ -97,11 +101,11 @@ namespace proc3d {
       getContext(context)->deltaOps.push(RotateEuler(name, time, x, y, z));
     }
 
-    void proc3d_set_rotation_matrix(void* context, const char* name, 
-				    const double r11, const double r12, const double r13, 
-				    const double r21, const double r22, const double r23, 
-				    const double r31, const double r32, const double r33, 
-				    const double time) {
+    void proc3d_set_rotation_matrix(void* context, const char* name,
+            const double r11, const double r12, const double r13,
+            const double r21, const double r22, const double r23,
+            const double r31, const double r32, const double r33,
+            const double time) {
       boost::numeric::ublas::bounded_matrix<double, 3, 3> m;
       //TODO: This can probably be rewritten with some fancy boost function, I just can't figure out which one ...
       m(0,0) = r11; m(0,1) = r12; m(0,2) = r13;
