@@ -92,6 +92,7 @@ void* modbus_msg_alloc(const char *target, const char* object, const char *inter
 				   DBUS_TYPE_VARIANT_AS_STRING
 				   DBUS_DICT_ENTRY_END_CHAR_AS_STRING,
 				   &(message->dict));
+
   return message;
 }
 
@@ -176,11 +177,11 @@ void modbus_msg_add_double(void* message, const char* name, double value) {
   return msg_add_entry(message, name, &value, DBUS_TYPE_DOUBLE, DBUS_TYPE_DOUBLE_AS_STRING);
 }
 
-void modbus_msg_add_int(void* message, const char* name, uint32_t value) {
+void modbus_msg_add_int(void* message, const char* name, int value) {
   return msg_add_entry(message, name, &value, DBUS_TYPE_INT32, DBUS_TYPE_INT32_AS_STRING);
 }
 
-void modbus_msg_add_string(void* message, const char* name, char* value) {
+void modbus_msg_add_string(void* message, const char* name, const char* value) {
   return msg_add_entry(message, name, &value, DBUS_TYPE_STRING, DBUS_TYPE_STRING_AS_STRING);
 }
 
