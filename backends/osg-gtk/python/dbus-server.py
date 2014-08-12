@@ -17,8 +17,21 @@ elif (platform.system() == 'Windows'):
     viewer = CDLL("libm3d-osg-gtk.dll")  # GTK/OSG backend
     proc3d = CDLL("libproc3d.dll") # procedural 3d
 elif (platform.system() == 'Darwin'):
-    print("MacOS Darwin OS not tested yet...") # eventually add MacOS shared library
-    sys.exit()
+    try:
+      omhome = os.environ['OPENMODELICAHOME']
+      print "Using OPENMODELICA to find backends:",omhome
+    except:
+      try:
+        omhome = os.path.abspath(__file__).split('/lib')[0]
+        print "Using script location to find backends:",omhome
+      except:
+        print "Could not determine OPENMODELICAHOME; needed on OSX to find libproc3d.dylib"
+        sys.exit(1)
+    path = os.path.join(omhome, 'lib')
+    viewer = CDLL(os.path.join(path,"libm3d-osg-gtk.dylib"))  # GTK/OSG backend
+    proc3d = CDLL(os.path.join(path,"libproc3d.dylib")) # procedural 3d
+
+viewer.osg_gtk_alloc_context.restype = c_void_p
 
 from dbus.mainloop.glib import DBusGMainLoop
 import dbus
@@ -180,7 +193,7 @@ if __name__ == '__main__':
     name = dbus.service.BusName("de.tuberlin.uebb.modelica3d.server", session_bus)
     api = Modelica3DAPI(session_bus, "/de/tuberlin/uebb/modelica3d/server")
 
-    ctxt = viewer.osg_gtk_alloc_context()
+    ctxt = c_void_p(viewer.osg_gtk_alloc_context())
     api.omg = proc3d
     api.ctxt = ctxt
 
