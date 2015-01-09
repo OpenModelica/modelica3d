@@ -1,9 +1,9 @@
 find_package(Boost REQUIRED)
 
 if(MINGW)
-add_definitions(-fPIC -U__STRICT_ANSI__)
+add_definitions(-std=c++0x -fPIC -U__STRICT_ANSI__)
 else(MINGW)
-add_definitions(-fPIC)
+add_definitions(-std=c++0x -fPIC)
 endif(MINGW)
 
 include_directories(${Boost_INCLUDE_DIR})
