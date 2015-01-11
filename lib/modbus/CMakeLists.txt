@@ -15,7 +15,7 @@ if (USE_OMC)
     DESTINATION "${OMC_MOD_LIB_DIR}/${MODELICA_SERVICES_LIBRARY}")
 
   # Install library header
-  #install(FILES "${modbus_src}/c/modbus.h" DESTINATION ${OMC_INCLUDE_DIR})
+  install(FILES "${modbus_src}/c/modbus.h" DESTINATION ${OMC_INCLUDE_DIR})
 
   install(TARGETS modbus
     LIBRARY DESTINATION ${OMC_LIBRARY_DIR}
