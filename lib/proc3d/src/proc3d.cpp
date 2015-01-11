@@ -1,22 +1,23 @@
 /*
-  Copyright (c) 2012 Christoph Höger, All Rights Reserved
-  
-  This file is part of modelica3d 
-  (https://mlcontrol.uebb.tu-berlin.de/redmine/projects/modelica3d-public).
+  This file is part of the Modelica3D package.
+
+  Copyright (C) 2012-current year  Christoph Höger and Technical University of Berlin
 
   This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
-   
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+  You should have received a copy of the GNU Lesser General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/lgpl.html>.
+
+  Main Author 2010-2013, Christoph Höger
+ */
 
 #include "proc3d.hpp"
 #include "operations.hpp"
@@ -49,7 +50,8 @@ namespace proc3d {
     /* setup ops */
 
     void proc3d_load_object(void* context, const char* name, const char* filename, const double x, const double y, const double z) {
-      getContext(context)->setupOps.push(LoadObject(name, filename, boost::array<double, 3>{x,y,z}));
+      boost::array<double, 3> arr = {x,y,z};
+      getContext(context)->setupOps.push(LoadObject(name, filename, arr));
     }
 
     void proc3d_create_shape(void* context, const char* name, const char * descr, 
@@ -60,12 +62,13 @@ namespace proc3d {
     }
 	
     void proc3d_create_group(void* context, const char* name) {
-      getContext(context)->setupOps.push(CreateGroup(name));    
+      getContext(context)->setupOps.push(CreateGroup(name));
     }
 
     void proc3d_create_material(void* context, const char* name, const double r, const double g, const double b, const double a) {
       getContext(context)->setupOps.push(CreateMaterial(name));
     }
+
 
     void proc3d_add_to_group(void* context, const char* name, const char* target) {
       getContext(context)->setupOps.push(AddToGroup(name, target));
@@ -81,11 +84,11 @@ namespace proc3d {
       getContext(context)->deltaOps.push(RotateEuler(name, time, x, y, z));
     }
 
-    void proc3d_set_rotation_matrix(void* context, const char* name, 
-				    const double r11, const double r12, const double r13, 
-				    const double r21, const double r22, const double r23, 
-				    const double r31, const double r32, const double r33, 
-				    const double time) {
+    void proc3d_set_rotation_matrix(void* context, const char* name,
+            const double r11, const double r12, const double r13,
+            const double r21, const double r22, const double r23,
+            const double r31, const double r32, const double r33,
+            const double time) {
       boost::numeric::ublas::bounded_matrix<double, 3, 3> m;
       //TODO: This can probably be rewritten with some fancy boost function, I just can't figure out which one ...
       m(0,0) = r11; m(0,1) = r12; m(0,2) = r13;

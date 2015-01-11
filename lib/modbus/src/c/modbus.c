@@ -1,22 +1,23 @@
 /*
-  Copyright (c) 2012 Christoph Höger, All Rights Reserved
+  This file is part of the Modelica3D package.
   
-  This file is part of modelica3d 
-  (https://mlcontrol.uebb.tu-berlin.de/redmine/projects/modelica3d-public).
+  Copyright (C) 2012-current year  Christoph Höger and Technical University of Berlin
 
   This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
-   
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+  You should have received a copy of the GNU Lesser General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/lgpl.html>.
+
+  Main Author 2010-2013, Christoph Höger
+ */
 
 #define DBUS_STATIC_BUILD   /* In order to link against dbus static lib. */
 #include <stdio.h>
@@ -91,6 +92,7 @@ void* modbus_msg_alloc(const char *target, const char* object, const char *inter
 				   DBUS_TYPE_VARIANT_AS_STRING
 				   DBUS_DICT_ENTRY_END_CHAR_AS_STRING,
 				   &(message->dict));
+
   return message;
 }
 
@@ -175,11 +177,11 @@ void modbus_msg_add_double(void* message, const char* name, double value) {
   return msg_add_entry(message, name, &value, DBUS_TYPE_DOUBLE, DBUS_TYPE_DOUBLE_AS_STRING);
 }
 
-void modbus_msg_add_int(void* message, const char* name, uint32_t value) {
+void modbus_msg_add_int(void* message, const char* name, int value) {
   return msg_add_entry(message, name, &value, DBUS_TYPE_INT32, DBUS_TYPE_INT32_AS_STRING);
 }
 
-void modbus_msg_add_string(void* message, const char* name, char* value) {
+void modbus_msg_add_string(void* message, const char* name, const char* value) {
   return msg_add_entry(message, name, &value, DBUS_TYPE_STRING, DBUS_TYPE_STRING_AS_STRING);
 }
 

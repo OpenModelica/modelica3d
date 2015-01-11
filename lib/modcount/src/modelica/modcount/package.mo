@@ -1,22 +1,23 @@
 /*
-  Copyright (c) 2012 Christoph Höger, All Rights Reserved
-  
-  This file is part of modelica3d 
-  (https://mlcontrol.uebb.tu-berlin.de/redmine/projects/modelica3d-public).
+  This file is part of the Modelica3D package.
+
+  Copyright (C) 2012-current year  Christoph Höger and Technical University of Berlin
 
   This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
+  it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
-   
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+  You should have received a copy of the GNU Lesser General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/lgpl.html>.
+
+  Main Author 2010-2013, Christoph Höger
+ */
 
 within ModelicaServices;
 
@@ -24,8 +25,8 @@ package modcount
 
   class Context
     extends ExternalObject;
-    
-    function constructor    
+
+    function constructor
       annotation(Include = "#include <modcount.h>", Library = {"modcount"});
       output Context context;
       external "C" context = modcount_acquire_context();
@@ -36,7 +37,7 @@ package modcount
       input Context context;
       external "C" modcount_release_context(context);
     end destructor;
-  end Context;  
+  end Context;
 
   function set
     annotation(Include = "#include <modcount.h>", Library = {"modcount"});
@@ -45,7 +46,7 @@ package modcount
     output Integer out;
     external "C" out = modcount_set(c, i);
   end set;
-  
+
   function get
     annotation(Include = "#include <modcount.h>", Library = {"modcount"});
     input Context c;
@@ -53,7 +54,7 @@ package modcount
     external "C" i = modcount_get(c);
   end get;
 
-  function increase_get    
+  function increase_get
     input Context c;
     output Integer i;
     algorithm
@@ -64,7 +65,7 @@ package modcount
   class HeapString
     extends ExternalObject;
 
-    function constructor    
+    function constructor
       annotation(Include = "#include <modcount.h>", Library = {"modcount"});
       input String content;
       output HeapString str;
@@ -78,12 +79,18 @@ package modcount
     end destructor;
   end HeapString;
 
+  function setString
+    input HeapString str;
+    input String val;
+    annotation(Include = "#include <modcount.h>", Library = {"modcount"});
+    external "C" modcount_set_string(str,val);
+  end setString;
+
   function getString
     input HeapString str;
     output String val;
     annotation(Include = "#include <modcount.h>", Library = {"modcount"});
     external "C" val = modcount_get_string(str);
   end getString;
-  
 
 end modcount;

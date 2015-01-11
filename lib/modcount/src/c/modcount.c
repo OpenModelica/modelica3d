@@ -1,5 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+
 
 #include "modcount.h"
 
@@ -35,27 +37,39 @@ void modcount_release_context(void* vctxt) {
 }
 
 /**
- * Openmodelica does not have a sane memory management, we need to hide our heap objects ...
+ * Modelica tools will free strings passed to external functions,
+ * so we need to hide our string objects on the heap...
  */
-void* modcount_acquire_string(const char* content) {
-  /* we do not know modelica's string length 
-     Instead of char*, we could also use C++ std::string here ...  
+void* modcount_acquire_string(const char *content) {
+  /* we do not know modelica's string length
+     Instead of char*, we could also use C++ std::string here ...
    */
+  char **res = (char**) malloc(sizeof(char*));
   const size_t len = strlen(content);
-  char* buf = (char*)calloc(len+1, sizeof(char));	// +1 since it is 0-terminated
+  char* buf = (char*)calloc(len+1, sizeof(char)); // +1 since it is 0-terminated
   strcpy(buf, content);
-  return buf;
+  *res = buf;
+  return (void*) res;
 }
 
-void modcount_release_string(void* str) {
+void modcount_release_string(void *obj) {
+  char **str = (char**) obj;
+  free(*str);
   free(str);
 }
 
-const char* modcount_get_string(void* str) {
+const char* modcount_get_string(void *str) {
   /* copy, so omc does _not_ free */
-  const char* content = (const char*) str;
-  const size_t len = strlen(content);
-  char* buf = (char*)calloc(len+1, sizeof(char));	// +1 since it is 0-terminated
-  strcpy(buf, content);
+  const char** content = (const char**) str;
+  const size_t len = strlen(*content);
+  char* buf = (char*)calloc(len+1,sizeof(char)); // +1 since it is 0-terminated
+  strncpy(buf, *content, len+1);
   return buf;
+}
+
+void modcount_set_string(void *obj, const char *content) {
+  const size_t len = strlen(content);
+  char **res = (char**) obj;
+  *res = realloc(*res, sizeof(char)*(len+1));
+  strncpy(*res, content, len+1);
 }
