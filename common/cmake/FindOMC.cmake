@@ -1,10 +1,10 @@
 # Tries to detect omc modelica-library and include dirs, does not search for binary yet
 
 # This will also search ${CMAKE_PREFIX_PATH}/include automagically
-find_path(OMC_INCLUDE_DIR modelica.h PATH_SUFFIXES omc)
+find_path(OMC_INCLUDE_DIR openmodelica.h PATH_SUFFIXES omc/c)
 
 # This will _not_ search ${CMAKE_PREFIX_PATH}/lib automagically, we need to give a search hint
-find_path(OMC_MOD_LIB_DIR "Modelica 3.1/package.mo" 
+find_path(OMC_MOD_LIB_DIR "ModelicaReference/package.mo"
   PATHS "${CMAKE_LIBRARY_PATH}/omlibrary"
         "${CMAKE_PREFIX_PATH}/lib/omlibrary" /usr/lib/omlibrary)
 
