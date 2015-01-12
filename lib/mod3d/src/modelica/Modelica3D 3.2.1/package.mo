@@ -28,6 +28,10 @@ package Modelica3D
     when terminal() then
       if autostop then stop(conn, context); end if;
     end when;
+  annotation (
+    defaultComponentName="m3d_control",
+    defaultComponentPrefixes="inner",
+    missingInnerMessage="No \"m3d_control\" component is defined.");
   end Controller;
 
   function objectId
