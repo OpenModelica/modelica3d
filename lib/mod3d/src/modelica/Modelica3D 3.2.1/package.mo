@@ -482,12 +482,12 @@ package Modelica3D
 
     discrete Real[3] pos;
     discrete Real[3,3] oldT;
-    discrete Boolean moved;
-    discrete Boolean rotated;
-  // disable initial equation for now, since there is some bug in initial residuals
-  //initial equation
-  //  pre(oldT) = R.T;
-  //  pre(pos) = r + Frames.resolve1(R, r_shape);
+    discrete Boolean moved(start=true, fixed=true);
+    discrete Boolean rotated(start=true, fixed=true);
+  initial equation
+    res = " ";
+    pre(oldT) = R.T;
+    pre(pos) = r + Frames.resolve1(R, r_shape);
   algorithm
     when m3d_control.send and modcount.get(initContext) == 1 then
     // check for rotation
