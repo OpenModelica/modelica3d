@@ -3,6 +3,8 @@
 # This will also search ${CMAKE_PREFIX_PATH}/include automagically
 find_path(OMC_INCLUDE_DIR modelica.h PATH_SUFFIXES omc)
 
+find_program(OMC_COMPILER NAMES omc)
+
 # This will _not_ search ${CMAKE_PREFIX_PATH}/lib automagically, we need to give a search hint
 find_path(OMC_MOD_LIB_DIR "Modelica 3.1/package.mo" 
   PATHS "${CMAKE_LIBRARY_PATH}/omlibrary"
@@ -11,9 +13,9 @@ find_path(OMC_MOD_LIB_DIR "Modelica 3.1/package.mo"
 # This will also search ${CMAKE_PREFIX_PATH}/lib automagically
 find_library(OMC_RUNTIME omcruntime PATH_SUFFIXES omc)
 
-if ( OMC_INCLUDE_DIR AND OMC_MOD_LIB_DIR AND OMC_RUNTIME)
+if ( OMC_INCLUDE_DIR AND OMC_MOD_LIB_DIR AND OMC_RUNTIME AND OMC_COMPILER)
   set( OMC_FOUND TRUE )
-endif( OMC_INCLUDE_DIR AND OMC_MOD_LIB_DIR AND OMC_RUNTIME)
+endif()
 
 if( OMC_INCLUDE_DIR)
   set( OMC_INCLUDES "${OMC_INCLUDE_DIR}")
@@ -24,11 +26,12 @@ if( OMC_RUNTIME)
 endif( OMC_RUNTIME)
 
 if( OMC_FOUND )
-    message( STATUS "Found omc: ${OMC_RUNTIME}" )
+    message( STATUS "Found omc runtime  : ${OMC_RUNTIME}" )
+    message( STATUS "Found omc compiler : ${OMC_COMPILER}" )
     else( OMC_FOUND )
     if( OMC_FIND_REQUIRED )
-    	message( FATAL_ERROR "Could not find the openmodelica installation" )
+        message( FATAL_ERROR "Could not find the openmodelica installation" )
     endif( OMC_FIND_REQUIRED )
 endif( OMC_FOUND )
 
-
+# vi:ts=4:sw=4:expandtab
