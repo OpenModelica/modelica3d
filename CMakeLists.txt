@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 project(modelica3d_dbus CXX C)
-option(USE_OMC "use openmodelica" ON)
+option(USE_OMC "use openmodelica" OFF)
 option(OSG_BACKEND "build openscenegraph backed" ON)
 option(INSTALL_EXAMPLES "install examples" ON)
 option(BLENDER_BACKEND "build blender backed" ON)
