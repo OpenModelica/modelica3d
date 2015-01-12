@@ -1,0 +1,6 @@
+loadModelica3D();getErrorString();
+loadString("model DoublePendulum
+  extends Modelica.Mechanics.MultiBody.Examples.Elementary.DoublePendulum;
+  inner ModelicaServices.Modelica3D.Controller m3d_control;
+end DoublePendulum;");getErrorString();
+simulate(DoublePendulum);

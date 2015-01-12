@@ -11,6 +11,8 @@ set(CPACK_PACKAGE_CONTACT "openmodelica@ida.liu.se")
 set(CPACK_SET_DESTDIR "ON")
 include(CPack)
 
+enable_testing()
+
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/common/cmake")
 
 if (USE_OMC)
@@ -35,3 +37,5 @@ endif(BLENDER_BACKEND)
 if(INSTALL_EXAMPLES)
   add_subdirectory(examples/multibody)
 endif(INSTALL_EXAMPLES)
+
+add_subdirectory(test)
