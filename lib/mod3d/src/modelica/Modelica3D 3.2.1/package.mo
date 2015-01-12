@@ -43,7 +43,7 @@ package Modelica3D
   protected
     Message msg = Message(TARGET, OBJECT, INTERFACE, "make_material");
   algorithm
-    setString(id,"material_" + String(modcount.increase_get(context)));
+    setString(id, "material_" + String(modcount.increase_get(context)));
     addString(msg, "reference", getString(id));
     sendMessage(conn, msg);
   end createMaterial;
@@ -158,14 +158,15 @@ package Modelica3D
   function createShape
     input Connection conn;
     input Context context;
+    input String descr;
     input Real length, width, height;
     input Real[3] at;
     input Real extra;
-    output Id id;
+    input Id id;
   protected
     Message msg = Message(TARGET, OBJECT, INTERFACE, "make_shape");
   algorithm
-    id := HeapString(descr + "_" + String(modcount.increase_get(context)));
+    setString(id, descr + "_" + String(modcount.increase_get(context)));
     addString(msg, "reference", getString(id));
     addString(msg, "descr", descr);
     addReal(msg, "length", length);
@@ -373,7 +374,7 @@ package Modelica3D
 
       // check for shape change, and update if necessary
       // TODO: do check, for shape update instead of moved
-      updateShape(m3d_control.state, id, shapeType, length, width, height, lengthDirection, extra, time);
+      updateShape(m3d_control.conn, m3d_control.context, id, shapeType, length, width, height, lengthDirection, extra, time);
 
     end when;
 
@@ -385,7 +386,7 @@ package Modelica3D
       Modelica.Utilities.Streams.print( "height = " + String(height));
 
       
-      shapeDescrTo3D(m3d_control.conn, m3d_control.context, shapeType, length, width, height, lengthDirection, extra, id);
+      createShape(m3d_control.conn, m3d_control.context, shapeType, length, width, height, lengthDirection, extra, id);
       createMaterial(m3d_control.conn, m3d_control.context, mat);
       setAmbientColor(m3d_control.conn, m3d_control.context, mat, color[1] / 255, color[2] / 255, color[3] / 255, 1.0, time);
       setSpecularColor(m3d_control.conn, m3d_control.context, mat, specularCoefficient * (color[1] / 255),
