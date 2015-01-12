@@ -3,4 +3,6 @@ loadString("model DoublePendulum
   extends Modelica.Mechanics.MultiBody.Examples.Elementary.DoublePendulum;
   inner ModelicaServices.Modelica3D.Controller m3d_control;
 end DoublePendulum;");getErrorString();
-simulate(DoublePendulum);
+system("python " + getInstallationDirectoryPath() + "/lib/omlibrary-modelica3d/osg-gtk/dbus-server.py &");getErrorString();
+res:=simulate(DoublePendulum);getErrorString();
+exit(if res.resultFile <> "" then 0 else 1);
