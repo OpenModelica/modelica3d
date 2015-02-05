@@ -54,6 +54,13 @@ namespace proc3d {
       getContext(context)->setupOps.push(LoadObject(name, filename, arr));
     }
 
+    void proc3d_create_shape(void* context, const char* name, const char * descr, 
+			      const double length, const double width, const double height, 
+			      const double x, const double y, const double z, 
+			      const double extra) {
+      getContext(context)->setupOps.push(CreateShape{name, descr, length, width, height, extra, boost::array<double, 3>{x,y,z}});
+    }
+	
     void proc3d_create_group(void* context, const char* name) {
       getContext(context)->setupOps.push(CreateGroup(name));
     }
@@ -62,31 +69,6 @@ namespace proc3d {
       getContext(context)->setupOps.push(CreateMaterial(name));
     }
 
-    void proc3d_create_sphere(void* context, const char* name, const double radius) {
-      getContext(context)->setupOps.push(CreateSphere(name, radius));
-    }
-
-    void proc3d_create_box(void* context, const char* name,
-         const double x, const double y, const double z,
-         const double width, const double length, const double height) {
-      boost::array<double, 3> arr = {x,y,z};
-      getContext(context)->setupOps.push(CreateBox(name, width, length, height, arr));
-    }
-
-    void proc3d_create_plane(void* context, const char* name, const double width, const double length) {
-      getContext(context)->setupOps.push(CreatePlane(name, width, length));
-    }
-
-    void proc3d_create_cylinder(void* context, const char* name, const double x, const double y, const double z, const double height, const double radius) {
-      boost::array<double, 3> arr = {x,y,z};
-      CreateCylinder cylinder = CreateCylinder(name, radius, height, arr);
-      getContext(context)->setupOps.push(cylinder);
-    }
-
-    void proc3d_create_cone(void* context, const char* name, const double x, const double y, const double z, const double height, const double radius) {
-      boost::array<double, 3> arr = {x,y,z};
-      getContext(context)->setupOps.push(CreateCone(name, radius, height, arr));
-    }
 
     void proc3d_add_to_group(void* context, const char* name, const char* target) {
       getContext(context)->setupOps.push(AddToGroup(name, target));
@@ -127,6 +109,13 @@ namespace proc3d {
     void proc3d_set_material_property(void* context, const char* name, const char* property, const double value, const double time) {
       getContext(context)->deltaOps.push(SetMaterialProperty(name, time, property, value));
     }
+
+  void proc3d_update_shape(void* context, const char* name, const char * descr, 
+			      const double length, const double width, const double height, 
+			      const double x, const double y, const double z, 
+			      const double extra, const double time) {
+      getContext(context)->deltaOps.push(UpdateShape{name, time, descr, length, width, height, extra, boost::array<double, 3>{x,y,z}});
+   }
 
     void proc3d_set_ambient_color(void* context, const char* name, const double r, const double g, const double b, const double a, const double time) {
       getContext(context)->deltaOps.push(SetAmbientColor(name, time, r, g, b, a));

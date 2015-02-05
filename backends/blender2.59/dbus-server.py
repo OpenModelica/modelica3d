@@ -68,14 +68,6 @@ class Modelica3DAPI(dbus.service.Object):
         l.quit()
         return "stopped"
 
-    @mod3D_api(reference = undefined_object, length = not_zero)
-    def make_box(self, reference=-1, length=1, width=1, height=1):
-        ops.mesh.primitive_cube_add()
-        context.active_object.name = reference
-        size = (length, width, height)
-        ops.transform.resize(size)
-        return reference        
-
     @mod3D_api(reference = defined_object, frame = positive_int)
     def move_to(self, reference, x=None, y=None, z=None, frame=1, immediate=False):	        
         o = data.objects[reference]
@@ -127,20 +119,51 @@ class Modelica3DAPI(dbus.service.Object):
         return reference
     
     @mod3D_api(reference = undefined_object)
-    def make_cone(self, reference, x=0.0, y=0.0, z=1.0, diameter=1.0, height=1.0):	
-        ops.mesh.primitive_cone_add(radius=diameter / 2.0, depth=height)
+    def make_shape(self, reference, descr, length=1.0, width=1.0, height=1.0, x=0.0, y=0.0, z=1.0, extra=0.0):	
+        if descr == "cylinder":
+            ops.mesh.primitive_cylinder_add()
+            ops.transform.resize((length, width, height))
+        elif descr == "cone":
+            ops.mesh.primitive_cone_add()
+            ops.transform.resize((length, width, height))
+        elif descr == "sphere":
+            ops.mesh.primitive_uv_sphere_add()
+            ops.transform.resize((length, width, height))
+        elif descr == "box":
+            ops.mesh.primitive_cube_add()
+            ops.transform.resize((length, width, height))
+        elif descr == "plane":
+            ops.mesh.primitive_cube_add()
+            ops.transform.resize((length, width, 0.0001))
+        else:
+            print "shape {} not implemented".format(descr)
+            return reference
+        z_axis = Vector(0,0,1)
+        target = Vector(x,y,z)
+        q = z_axis.difference(target)
+        ops.transform.rotate(value=q.angle, axis=q.axis)
         context.active_object.name = reference
         return reference
 
     @mod3D_api(reference = undefined_object)
-    def make_sphere(self, reference, size):	
-        ops.mesh.primitive_uv_sphere_add(size=size)
-        context.active_object.name = reference
-        return reference
-
-    @mod3D_api(reference = undefined_object)
-    def make_cylinder(self, reference, x=0.0, y=0.0, z=1.0, diameter=1.0, height=1.0):	
-        ops.mesh.primitive_cylinder_add(radius=diameter / 2.0, depth=height)
+    def update_shape(self, reference, descr, length=1.0, width=1.0, height=1.0, x=0.0, y=0.0, z=1.0, extra=0.0):	
+        if descr == "cylinder":
+            ops.transform.resize((length, width, height))
+        elif descr == "cone":
+            ops.transform.resize((length, width, height))
+        elif descr == "sphere":
+            ops.transform.resize((length, width, height))
+        elif descr == "box":
+            ops.transform.resize((length, width, height))
+        elif descr == "plane":
+            ops.transform.resize((length, width, 0.0001))
+        else:
+            print "shape {} not implemented".format(descr)
+            return reference
+        z_axis = Vector(0,0,1)
+        target = Vector(x,y,z)
+        q = z_axis.difference(target)
+        ops.transform.rotate(value=q.angle, axis=q.axis)
         context.active_object.name = reference
         return reference
 
@@ -183,3 +206,5 @@ if __name__ == '__main__':
     name = dbus.service.BusName("de.tuberlin.uebb.modelica3d.server", session_bus)
     api = Modelica3DAPI(session_bus, "/de/tuberlin/uebb/modelica3d/server")    
     l.run()
+
+# vim:ts=4:sw=4:expandtab

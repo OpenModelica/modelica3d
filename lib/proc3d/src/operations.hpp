@@ -38,6 +38,16 @@ namespace proc3d {
   struct CreateGroup : ObjectOperation {    
     CreateGroup(const std::string& name) : ObjectOperation(name) {}
   };
+  
+  struct CreateShape : ObjectOperation {
+    CreateShape(const std::string& name, const std::string& descr, const double l, const double w, const double h, const double extra, const array<double,3>& a) : ObjectOperation(name), descr(descr), length(l), width(w), height(h), extra(extra), at(a) {}
+    std::string descr;
+    double length;
+    double width;
+    double height;
+    double extra;
+    array<double, 3> at;
+  };
 
   struct LoadObject : ObjectOperation {
     LoadObject(const std::string& name, const std::string& f, const array<double,3>& a) : ObjectOperation(name), fileName(f), at(a) {}
@@ -124,6 +134,16 @@ namespace proc3d {
     double value;
   };
 
+  struct UpdateShape : DeltaOperation {
+    UpdateShape(const std::string& name, const double t, const std::string& descr, const double l, const double w, const double h, const double extra, const array<double,3>& a) : DeltaOperation(name, t), descr(descr), length(l), width(w), height(h), extra(extra), at(a) {}
+    std::string descr;
+    double length;
+    double width;
+    double height;
+    double extra;
+    array<double, 3> at;
+  };
+
   struct SetAmbientColor : DeltaOperation {
     SetAmbientColor(const std::string& name, const double t,
 		    const double r, const double g, const double b, const double a) : 
@@ -145,11 +165,10 @@ namespace proc3d {
       array<double, 4> color;
   };
 
-  typedef variant<CreateGroup, CreateSphere, CreateBox, 
-		  CreateCylinder, CreateCone, CreatePlane,
-		  LoadObject, AddToGroup, CreateMaterial, ApplyMaterial> SetupOperation;
+  typedef variant<CreateGroup, CreateShape, LoadObject, AddToGroup, CreateMaterial, ApplyMaterial> SetupOperation;
 
   typedef variant<Move, Scale, RotateEuler, RotateMatrix, SetMaterialProperty, 
+	          UpdateShape,
 		  SetAmbientColor, SetDiffuseColor, SetSpecularColor> AnimOperation;
   
 }

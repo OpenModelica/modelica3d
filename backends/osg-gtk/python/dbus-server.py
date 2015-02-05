@@ -88,7 +88,7 @@ def defined_material(ref) :
 # Check for positive value
 def positive(s):
     return (s <= 0.0, "expected positive value")
-
+ 
 def positive_int(i):
     return (isinstance(i,int) and i >= 0, "expected positive int")
 
@@ -106,26 +106,21 @@ class Modelica3DAPI(dbus.service.Object):
         l.quit()
         return "stopped"
 
-    @mod3D_api(reference = undefined_object, length = not_zero)
-    def make_box(self, reference, length=1, width=1, height=1, tx=0.0, ty=0.0, tz=1.0):
-        self.omg.proc3d_create_box(self.ctxt, c_char_p(reference),
-                                   c_double(tx), c_double(ty), c_double(tz),
-                                   c_double(width), c_double(length), c_double(height))
+    @mod3D_api(reference = undefined_object)
+    def make_shape(self, reference, descr, length, width, height, x, y, z, extra, immediate=False):
+        if (length < 0.001 or width < 0.001 or height < 0.001): return reference
+        print 'making shape', descr, length, width, height, x, y, z, extra
+        self.omg.proc3d_create_shape(self.ctxt, c_char_p(reference), c_char_p(descr),
+          c_double(length), c_double(width), c_double(height),
+          c_double(x), c_double(y), c_double(z), c_double(extra))
         return reference
 
-    @mod3D_api(reference = undefined_object, height = not_zero, diameter = not_zero)
-    def make_cone(self, reference, x=0.0, y=0.0, z=1.0, diameter=1, height=5):
-        self.omg.proc3d_create_cone(self.ctxt, c_char_p(reference), c_double(x), c_double(y), c_double(z), c_double(height), c_double(diameter / 2.0));
-        return reference
-
-    @mod3D_api(reference = undefined_object, size = not_zero)
-    def make_sphere(self, reference, size=1):
-        self.omg.proc3d_create_sphere(self.ctxt, c_char_p(reference), c_double(size / 2.0));
-        return reference
-
-    @mod3D_api(reference = undefined_object, height = not_zero, diameter = not_zero)
-    def make_cylinder(self, reference, x=0.0, y=0.0, z=1.0, diameter=1, height = 10):
-        self.omg.proc3d_create_cylinder(self.ctxt, c_char_p(reference), c_double(x), c_double(y), c_double(z), c_double(height), c_double(diameter / 2.0))
+    @mod3D_api(reference = defined_object)
+    def update_shape(self, reference, descr, length, width, height, x, y, z, extra, t, immediate=False):
+        if (length < 0.001 or width < 0.001 or height < 0.001): return reference
+        self.omg.proc3d_update_shape(self.ctxt, c_char_p(reference), c_char_p(descr),
+          c_double(length), c_double(width), c_double(height),
+          c_double(x), c_double(y), c_double(z), c_double(extra), c_double(t))
         return reference
 
     @mod3D_api(reference = defined_object)
@@ -173,7 +168,7 @@ class Modelica3DAPI(dbus.service.Object):
                R_1_1, R_1_2, R_1_3,
                R_2_1, R_2_2, R_2_3,
                R_3_1, R_3_2, R_3_3,
-               t=0.0):
+               t=0.0, immediate=False):
         self.omg.proc3d_set_rotation_matrix(self.ctxt, c_char_p(reference),
                   c_double(R_1_1), c_double(R_1_2), c_double(R_1_3),
                   c_double(R_2_1), c_double(R_2_2), c_double(R_2_3),

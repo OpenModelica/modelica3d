@@ -47,7 +47,7 @@ package Modelica3D
   protected
     Message msg = Message(TARGET, OBJECT, INTERFACE, "make_material");
   algorithm
-    setString(id,"material_" + String(modcount.increase_get(context)));
+    setString(id, "material_" + String(modcount.increase_get(context)));
     addString(msg, "reference", getString(id));
     sendMessage(conn, msg);
   end createMaterial;
@@ -68,43 +68,6 @@ package Modelica3D
   end applyMaterial;
 
 
-  function createBox
-    input Connection conn;
-    input Context context;
-    input Real length, width, height;
-    input Id id;
-  protected
-    Message msg = Message(TARGET, OBJECT, INTERFACE, "make_box");
-  algorithm
-    setString(id,HeapString("box_" + String(modcount.increase_get(context))));
-    addString(msg, "reference", getString(id));
-    addReal(msg, "length", length);
-    addReal(msg, "width", width);
-    addReal(msg, "height", height);
-    sendMessage(conn, msg);
-  end createBox;
-
-
-  function createBoxAt
-    input Connection conn;
-    input Context context;
-    input Real length, width, height;
-    input Real tx,ty,tz;
-    input Id id;
-  protected
-    Message msg = Message(TARGET, OBJECT, INTERFACE, "make_box");
-  algorithm
-    setString(id,"box_" + String(modcount.increase_get(context)));
-    addString(msg, "reference", getString(id));
-    addReal(msg, "length", length);
-    addReal(msg, "width", width);
-    addReal(msg, "height", height);
-    addReal(msg, "tx", tx);
-    addReal(msg, "ty", ty);
-    addReal(msg, "tz", tz);
-    sendMessage(conn, msg);
-  end createBoxAt;
-
   function loadFromFile
     input Connection conn;
     input Context context;
@@ -123,96 +86,6 @@ package Modelica3D
     sendMessage(conn, msg);
   end loadFromFile;
 
-
-  function createSphere
-    input Connection conn;
-    input Context context;
-    input Real size;
-    input Id id;
-  protected
-    Message msg = Message(TARGET, OBJECT, INTERFACE, "make_sphere");
-  algorithm
-    setString(id,"sphere_" + String(modcount.increase_get(context)));
-    addString(msg, "reference", getString(id));
-    addReal(msg, "size", size);
-    sendMessage(conn, msg);
-  end createSphere;
-
-
-  function createCylinder
-    input Connection conn;
-    input Context context;
-    input Real height;
-    input Real diameter;
-    input Id id;
-  protected
-    Message msg = Message(TARGET, OBJECT, INTERFACE, "make_cylinder");
-  algorithm
-    setString(id,"cylinder_" + String(modcount.increase_get(context)));
-    addString(msg, "reference", getString(id));
-    addReal(msg, "height", height);
-    addReal(msg, "diameter", diameter);
-    sendMessage(conn, msg);
-  end createCylinder;
-
-
-  function createCylinderAt
-    input Connection conn;
-    input Context context;
-    input Real height;
-    input Real diameter;
-    input Real x,y,z;
-    input Id id;
-  protected
-    Message msg = Message(TARGET, OBJECT, INTERFACE, "make_cylinder");
-  algorithm
-    setString(id,"cylinder_" + String(modcount.increase_get(context)));
-    addString(msg, "reference", getString(id));
-    addReal(msg, "height", height);
-    addReal(msg, "diameter", diameter);
-    addReal(msg, "x", x);
-    addReal(msg, "y", y);
-    addReal(msg, "z", z);
-    sendMessage(conn, msg);
-  end createCylinderAt;
-
-
-  function createCone
-    input Connection conn;
-    input Context context;
-    input Real height;
-    input Real diameter;
-    input Id id;
-  protected
-    Message msg = Message(TARGET, OBJECT, INTERFACE, "make_cone");
-  algorithm
-    setString(id,"cone_" + String(modcount.increase_get(context)));
-    addString(msg, "reference", getString(id));
-    addReal(msg, "height", height);
-    addReal(msg, "diameter", diameter);
-    sendMessage(conn, msg);
-  end createCone;
-
-
-  function createConeAt
-    input Connection conn;
-    input Context context;
-    input Real height;
-    input Real diameter;
-    input Real x,y,z;
-    input Id id;
-  protected
-    Message msg = Message(TARGET, OBJECT, INTERFACE, "make_cone");
-  algorithm
-    setString(id,"cone_" + String(modcount.increase_get(context)));
-    addString(msg, "reference", getString(id));
-    addReal(msg, "height", height);
-    addReal(msg, "diameter", diameter);
-    addReal(msg, "x", x);
-    addReal(msg, "y", y);
-    addReal(msg, "z", z);
-    sendMessage(conn, msg);
-  end createConeAt;
 
 
   function moveTo
@@ -286,6 +159,54 @@ package Modelica3D
     r := sendMessage(conn, msg);
   end scaleZ;
 
+  function createShape
+    input Connection conn;
+    input Context context;
+    input String descr;
+    input Real length, width, height;
+    input Real[3] at;
+    input Real extra;
+    input Id id;
+  protected
+    Message msg = Message(TARGET, OBJECT, INTERFACE, "make_shape");
+  algorithm
+    setString(id, descr + "_" + String(modcount.increase_get(context)));
+    addString(msg, "reference", getString(id));
+    addString(msg, "descr", descr);
+    addReal(msg, "length", length);
+    addReal(msg, "width", width);
+    addReal(msg, "height", height);
+    addReal(msg, "x", at[1]);
+    addReal(msg, "y", at[2]);
+    addReal(msg, "z", at[3]);
+    addReal(msg, "extra", extra);
+    sendMessage(conn, msg);
+  end createShape;
+
+  function updateShape
+    input Connection conn;
+    input Context context;
+    input Id id;
+    input String descr;
+    input Real length, width, height;
+    input Real[3] at;
+    input Real extra;
+    input Real t;
+  protected
+    Message msg = Message(TARGET, OBJECT, INTERFACE, "update_shape");
+  algorithm
+    addString(msg, "reference", getString(id));
+    addString(msg, "descr", descr);
+    addReal(msg, "length", length);
+    addReal(msg, "width", width);
+    addReal(msg, "height", height);
+    addReal(msg, "x", at[1]);
+    addReal(msg, "y", at[2]);
+    addReal(msg, "z", at[3]);
+    addReal(msg, "extra", extra);
+    addReal(msg, "t", t);
+    sendMessage(conn, msg);
+  end updateShape;
 
   function setAmbientColor
     input Connection conn;
@@ -424,59 +345,6 @@ package Modelica3D
     import Id = ModelicaServices.modcount.HeapString;
     import Modelica.Mechanics.MultiBody.Frames;
 
-    function shapeDescrTo3D
-      input Connection conn;
-      input Context context;
-      input String descr;
-      input Real length, width, height;
-      input Real[3] at;
-      input Real extra;
-      input Id id;
-    algorithm
-
-      if (descr == "box") then
-        createBoxAt(conn, context, width, height, length, at[1], at[2], at[3], id);
-      elseif (descr == "cone") then
-        createConeAt(conn, context, length, width, at[1], at[2], at[3], id);
-      elseif (descr == "sphere") then
-        createSphere(conn, context, length, id);
-      elseif (descr == "cylinder") then
-        createCylinderAt(conn, context, length, width, at[1], at[2], at[3], id);
-      elseif (descr == "pipecylinder") then
-        if (Modelica.Math.isEqual(extra, 0.0)) then
-          createCylinderAt(conn, context, length, width, at[1], at[2], at[3], id);
-        else
-          // not yet supported
-          Modelica.Utilities.Streams.print("Error: Visualization of pipecylinders has not been implemented yet!");
-          setString(id,"UNKNOWN");
-        end if;
-      elseif (descr == "pipe") then
-        if (Modelica.Math.isEqual(extra, 0.0)) then
-          createCylinderAt(conn, context, length, width, at[1], at[2], at[3], id);
-        else
-          // not yet supported
-          Modelica.Utilities.Streams.print("Error: Visualization of pipes has not been implemented yet!");
-          setString(id,"UNKNOWN");
-        end if;
-      elseif (descr == "beam") then
-        // not yet supported
-        Modelica.Utilities.Streams.print("Error: Visualization of beams has not been implemented yet!");
-        setString(id,"UNKNOWN");
-      elseif (descr == "gearwheel") then
-        // not yet supported
-        Modelica.Utilities.Streams.print("Error: Visualization of gearwheels has not been implemented yet!");
-        setString(id,"UNKNOWN");
-      elseif (descr == "spring") then
-        // not yet supported
-        Modelica.Utilities.Streams.print("Error: Visualization of springs has not been implemented yet!");
-        setString(id,"UNKNOWN");
-      else
-        // assume it is a filename
-        loadFromFile(conn, context, Modelica.Utilities.Files.fullPathName(ModelicaServices.ExternalReferences.loadResource(descr)), at[1], at[2], at[3], id);
-      end if;
-
-    end shapeDescrTo3D;
-
     outer Controller m3d_control;
 
     Id id = Id("");
@@ -508,6 +376,10 @@ package Modelica3D
         res := moveTo(m3d_control.conn, m3d_control.context, id, pos, time);
       end if;
 
+      // check for shape change, and update if necessary
+      // TODO: do check, for shape update instead of moved
+      updateShape(m3d_control.conn, m3d_control.context, id, shapeType, length, width, height, lengthDirection, extra, time);
+
     end when;
 
     if modcount.get(initContext) <> 1 then
@@ -518,7 +390,7 @@ package Modelica3D
       Modelica.Utilities.Streams.print( "height = " + String(height));
 
       
-      shapeDescrTo3D(m3d_control.conn, m3d_control.context, shapeType, length, width, height, lengthDirection, extra, id);
+      createShape(m3d_control.conn, m3d_control.context, shapeType, length, width, height, lengthDirection, extra, id);
       createMaterial(m3d_control.conn, m3d_control.context, mat);
       setAmbientColor(m3d_control.conn, m3d_control.context, mat, color[1] / 255, color[2] / 255, color[3] / 255, 1.0, time);
       setSpecularColor(m3d_control.conn, m3d_control.context, mat, specularCoefficient * (color[1] / 255),
